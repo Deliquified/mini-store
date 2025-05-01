@@ -1,132 +1,122 @@
-# Lukso Mini-App Starter (Next.js 14)
+# Mini Store - Your Universal Profile App Discovery Platform
 
-A minimal starter template for building mini-apps on [Lukso](https://lukso.network/) with Next.js 14. This template provides the essential setup for interacting with Universal Profiles on the Lukso network, including metadata management and IPFS integration.
+Mini Store is a decentralized app discovery platform built for the LUKSO ecosystem, designed to make it easy for users to find, install, and manage Universal Profile mini-apps. Think of it as the "App Store" for the LUKSO ecosystem, but with a focus on decentralization and user sovereignty.
 
-## Overview
+## 🌟 Key Features
 
-This starter provides a foundation for building Lukso mini-apps with a modern frontend stack. It comes pre-configured with the necessary providers and components to interact with Universal Profiles, with minimal boilerplate so you can start building quickly. The template includes both mini-app functionality and a landing page for direct web access.
+### For Users
+- **Seamless Discovery**: Browse apps by category, popularity, or search
+- **One-Click Installation**: Install apps directly to your Universal Profile grid
+- **Curated Experience**: Featured apps and top charts help you find the best apps
+- **Developer Verification**: Trusted developers are highlighted
+- **Rich App Details**: Screenshots, descriptions, and size information for each app
+- **My Apps Management**: View and manage all your installed apps in one place
 
-## Features
+### For Developers
+- **Easy Integration**: Simple process to list your mini-app
+- **Rich Metadata**: Support for app icons, banners, screenshots, and descriptions
+- **Category System**: Organize your app for better discovery
+- **Developer Profiles**: Build your reputation in the ecosystem
+- **Direct Distribution**: Reach users directly through their Universal Profiles
 
-- ✅ Universal Profile integration
-- ✅ Connection status management
-- ✅ Profile data fetching and display
-- ✅ Provider setup for all Lukso functionality
-- ✅ GraphQL integration for profile metadata
-- ✅ IPFS integration via Pinata
-- ✅ Metadata update functionality
-- ✅ Context-aware UI (mini-app vs landing page)
-- ✅ Profile data management (name, description, images, etc.)
+## 🚀 Value Proposition
 
-## Tech Stack
+### For the LUKSO Ecosystem
+1. **Ecosystem Growth**: Makes it easier for users to discover and use LUKSO apps
+2. **Developer Onboarding**: Simplifies the process for developers to reach users
+3. **Quality Control**: Curated experience ensures high-quality apps
+4. **User Experience**: Streamlined discovery and installation process
+
+### For Users
+1. **Centralized Discovery**: One place to find all LUKSO mini-apps
+2. **Trust & Safety**: Verified developers and curated content
+3. **Easy Management**: Install and manage apps directly from your Universal Profile
+4. **Rich Information**: Detailed app information before installation
+5. **Personalized Experience**: Apps organized by category and popularity
+
+### For Developers
+1. **Distribution Channel**: Reach users directly through their Universal Profiles
+2. **Marketing Platform**: Showcase your app with rich media
+3. **User Acquisition**: Get discovered by users browsing for apps
+4. **Analytics**: Track installations and usage
+5. **Community Building**: Build a following in the LUKSO ecosystem
+
+## 🔮 Future Improvements
+
+### Technical Enhancements
+1. **Decentralized Registry**
+   - Implement a more efficient backend service for storing mini-app metadata
+   - Use IPFS for decentralized storage of app data
+
+2. **Enhanced Security**
+   - Implement LSP6 KeyManager to abstract away transactions
+   - Implement reputation system for developers
+
+3. **Smart Discovery**
+   - Add context-aware app suggestions based on user behavior
+   - Create personalized app feeds
+
+4. **Developer Tools**
+   - Add analytics dashboard for developers
+   - Implement app update management
+   - Add developer documentation and SDK
+
+5. **User Experience**
+   - Add app ratings and reviews
+   - Add app search with filters
+   - Create app collections and playlists
+
+### Ecosystem Integration
+
+1. **Community Features**
+   - Add user reviews and ratings
+   - Implement app discussions and comments
+
+2. **Monetization**
+   - Add support for in-app purchases
+   - Implement app subscriptions (o_O)
+
+## 🛠️ Technical Stack
 
 - **Frontend**: Next.js 14
 - **Styling**: Tailwind CSS
-- **Blockchain Interaction**: viem
+- **Blockchain**: viem
 - **Universal Profile**: UP Provider
 - **Data Schemas**: ERC725.js
-- **Data Fetching**: Apollo Client (for indexer interaction)
-- **IPFS Integration**: Pinata API
+- **Data Fetching**: Apollo Client
+- **IPFS**: Pinata API
 - **State Management**: React Context
 
-## Setup and Installation
+## 🚀 Getting Started
 
 1. Clone the repository:
-
 ```bash
-git clone https://github.com/Deliquified/mini-app-starter.git
+git clone https://github.com/Deliquified/mini-store.git
 cd mini-store
 ```
 
 2. Install dependencies:
-
 ```bash
 npm install
 ```
 
-3. Create a `.env` file with the following variables:
+3. Create a `.env` file:
 ```env
 PINATA_API_KEY=your_pinata_api_key
 PINATA_API_SECRET=your_pinata_api_secret
 ```
 
 4. Start the development server:
-
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`.
+## 🤝 Contributing
 
-## How to Test Your Mini-App
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-1. Visit [universaleverything.io](https://universaleverything.io)
-2. Connect your Universal Profile
-3. Add a new grid item with URL: `http://localhost:3000`
-4. Run this project locally with `npm run dev`
-5. View your mini-app on your grid
-6. When connected, you should see your profile image, name, assets owned & issued and connection status
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── components/
-│   │   ├── apollo/
-│   │   │   ├── apolloClient.ts      # Apollo setup for indexer
-│   │   │   └── queries.ts           # GraphQL queries for profile data
-│   │   ├── providers/
-│   │   │   ├── profileProvider.tsx  # Fetches Universal Profile data
-│   │   │   ├── upProvider.tsx       # UP Provider integration
-│   │   │   └── providers.tsx        # Combined providers manager
-│   │   └── LandingPage.tsx          # Landing page for direct web access
-│   ├── helper/
-│   │   └── pinata.ts                # IPFS upload helper functions
-│   ├── pinata/
-│   │   └── config.ts                # Pinata API configuration
-│   ├── api/
-│   │   └── pinataPinFile/
-│   │       └── route.ts             # Pinata API route for file pinning
-│   ├── page.tsx                     # Main page showing profile data
-│   └── layout.tsx                   # App layout with providers
-└── types/
-    └── index.ts                     # TypeScript type definitions
-```
-
-## Key Features Explained
-
-### Profile Data Management
-The application uses GraphQL to fetch comprehensive profile data including:
-- Basic info (name, description)
-- Profile images and banner
-- Tags and links
-- Tokens and NFTs (both held and issued)
-
-### IPFS Integration
-The template includes Pinata integration for IPFS operations:
-- Helper functions for uploading metadata
-- Configuration for IPFS pinning
-- Example implementation for updating profile data
-
-### Context-Aware UI
-The application intelligently handles different contexts:
-- When running as a mini-app (in iframe): Shows the full profile management interface
-- When accessed directly: Displays a landing page with project information
-
-### Profile Updates
-The template includes a working example of updating Universal Profile metadata:
-1. Data preparation (LSP3 schema)
-2. IPFS upload via Pinata
-3. Hash encoding
-4. Profile data update
-
-## Contributing
-
-Contributions are welcome! Feel free to submit issues and pull requests.
-
-Made by Deliquified Labs
-
-## License
+## 📝 License
 
 [MIT License](LICENSE)
+
+Made with ❤️ by Deliquified Labs
