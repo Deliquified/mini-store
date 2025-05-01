@@ -87,6 +87,59 @@ Mini Store is a decentralized app discovery platform built for the LUKSO ecosyst
 - **IPFS**: Pinata API
 - **State Management**: React Context
 
+## 📐 Architecture
+
+```mermaid
+graph TD
+    A[User Interface] --> B[App Discovery]
+    A --> C[App Installation]
+    A --> D[App Management]
+    
+    B --> E[Local App Registry]
+    C --> F[LSP28TheGrid Metadata]
+    D --> F
+    
+    F --> G[IPFS Upload]
+    G --> H[Get IPFS Hash]
+    H --> I[Prepare LSP28TheGrid Data]
+    I --> J[Encode Data]
+    J --> K[Update Universal Profile]
+    
+    subgraph "Universal Profile"
+        K --> L[LSP28TheGrid]
+    end
+    
+    subgraph "Storage"
+        E
+        G
+    end
+```
+
+### Flow Description
+
+1. **User Interface Layer**
+   - App discovery through categories and search
+   - Installation/uninstallation interface
+   - App management dashboard
+
+2. **Data Layer**
+   - Local app registry (demo phase)
+   - IPFS storage for metadata
+   - Universal Profile LSP28TheGrid data
+
+3. **Process Flow**
+   - User selects app to install/uninstall
+   - System prepares LSP28TheGrid metadata
+   - Metadata is uploaded to IPFS
+   - IPFS hash is retrieved
+   - Final LSP28TheGrid data is prepared and encoded
+   - Universal Profile is updated with new grid data
+
+4. **Integration Points**
+   - Universal Profile Provider for blockchain interaction
+   - IPFS (Pinata) for decentralized storage
+   - Local registry for app metadata (to be decentralized in future)
+
 ## 🚀 Getting Started
 
 1. Clone the repository:
