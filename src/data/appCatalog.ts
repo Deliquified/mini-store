@@ -54,6 +54,12 @@ import dashboard from "./icons/stakingverse-dashboard/logo.jpg"
 import dashboardBanner from "./icons/stakingverse-dashboard/banner.jpg"
 import dashboardScreenshot1 from "./icons/stakingverse-dashboard/image_1.png"
 
+// Notes
+import notes from "./icons/deliquified-notes/logo.webp"
+import notesBanner from "./icons/deliquified-notes/banner.png"
+import notesScreenshot1 from "./icons/deliquified-notes/image_1.png"
+import notesScreenshot2 from "./icons/deliquified-notes/image_2.png"
+
 // App Types and Interfaces
 export interface App {
   id: string;
@@ -289,6 +295,30 @@ export const apps: Record<string, App> = {
     ],
     featured: true    
   },
+  "deliquified-notes": {
+    id: "deliquified-notes",
+    name: "Notes",
+    icon: notes.src,
+    banner: notesBanner.src,
+    categories: ["Social", "Infrastructure"],
+    developer: 'Deliquified Labs',
+    tags: ['notes', 'deliquified', "notes", "social", "defolio"],
+    universalProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
+    appName: "Notes: Take Notes Privately",
+    appIcon: notes.src,
+    appAbout: "Notes is a simple and easy way to create and manage your private notes. It's a private note-taking app that allows you to take notes and save them to your Universal Profile. Notes follow wherever your Universal Profile goes.",
+    appLink: 'https://mini-notes-livid.vercel.app/',
+    appSize: {
+      width: 2,
+      height: 2
+    },
+    images: [
+      notesScreenshot1.src,
+      notesScreenshot2.src,
+    ],
+    featured: true    
+  },
+
 };
 
 // Categories definition
