@@ -56,7 +56,7 @@ import dashboardScreenshot1 from "./icons/stakingverse-dashboard/image_1.png"
 
 // Notes
 import notes from "./icons/deliquified-notes/logo.webp"
-import notesBanner from "./icons/deliquified-notes/banner.png"
+import notesBanner from "./icons/deliquified-notes/background.png"
 import notesScreenshot1 from "./icons/deliquified-notes/image_1.png"
 import notesScreenshot2 from "./icons/deliquified-notes/image_2.png"
 
@@ -318,7 +318,6 @@ export const apps: Record<string, App> = {
     ],
     featured: true    
   },
-
 };
 
 // Categories definition
