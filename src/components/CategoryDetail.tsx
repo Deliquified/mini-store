@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useState } from "react";
 import AppDetailPage from "./AppDetailPage";
 import { useInstallApp } from "@/hooks/useInstallApp";
+import { useGrid } from "@/app/components/providers/gridProvider";
+import GridSelectionDialog from "./GridSelectionDialog";
 
 interface CategoryDetailProps {
   category: Category;
@@ -14,9 +16,20 @@ interface CategoryDetailProps {
 }
 
 export default function CategoryDetail({ category, onBack, onAppClick }: CategoryDetailProps) {
+  const { sections } = useGrid();
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const apps = getAppsByCategory(category.id);
-  const { handleInstall, handleUninstall, isInstalling, isUninstalling, isInstalled } = useInstallApp();
+  const { 
+    handleInstall, 
+    handleUninstall, 
+    isInstalling, 
+    isUninstalling, 
+    isInstalled,
+    showGridSelection,
+    setShowGridSelection,
+    handleGridSelect,
+    handleGridSelectionCancel
+  } = useInstallApp();
 
   const handleAppSelection = (app: App) => {
     window.scrollTo(0, 0);
@@ -55,21 +68,17 @@ export default function CategoryDetail({ category, onBack, onAppClick }: Categor
                 className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-4"
                 onClick={() => setSelectedApp(app)}
               >
-                <div className="relative w-16 h-16 flex-shrink-0">
+                <div className="relative w-full aspect-square mb-2 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                   <Image
-                    src={app.icon}
-                    alt={app.name}
+                    src={app.icon || ""}
+                    alt={app.app.name}
                     fill
-                    className="rounded-xl object-contain"
+                    className="object-contain"
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {app.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {app.developer}
-                  </p>
+                <div className="w-full">
+                  <h3 className="text-sm font-medium truncate">{app.app.name}</h3>
+                  <p className="text-xs text-gray-500 truncate">{app.developer}</p>
                 </div>
                 <Button
                   variant={appIsInstalled ? "outline" : "default"}
@@ -112,6 +121,16 @@ export default function CategoryDetail({ category, onBack, onAppClick }: Categor
           )}
         </div>
       </div>
+
+      {/* Grid Selection Dialog */}
+      <GridSelectionDialog
+        open={showGridSelection}
+        onOpenChange={setShowGridSelection}
+        sections={sections}
+        appName="App"
+        onGridSelect={handleGridSelect}
+        onCancel={handleGridSelectionCancel}
+      />
     </div>
   );
 } 

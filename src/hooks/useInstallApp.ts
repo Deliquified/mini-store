@@ -13,19 +13,35 @@ export function useInstallApp() {
   const { accounts, client: upClient } = useUpProvider();
   const [isInstalling, setIsInstalling] = useState(false);
   const [isUninstalling, setIsUninstalling] = useState(false);
+  const [showGridSelection, setShowGridSelection] = useState(false);
+  const [pendingApp, setPendingApp] = useState<App | null>(null);
 
   const checkIfInstalled = (app: App) => {
     return sections.some(section => 
       section.grid.some(item => 
         item.type === 'IFRAME' && 
-        item.properties.src === app.appLink
+        item.properties.src === app.app.url
       )
     );
   };
 
   const handleInstall = async (app: App) => {
+    // Check if user is connected
+    if (!accounts || accounts.length === 0 || !upClient) {
+      toast("Connect your Universal Profile to install apps", {
+        duration: 3000,
+        position: "bottom-center",
+        style: {
+          background: "#dc2626",
+          color: "#ffffff",
+          border: "1px solid #dc2626"
+        }
+      });
+      return;
+    }
+
     if (checkIfInstalled(app)) {
-      toast(`${app.name} is already installed`, {
+      toast(`${app.app.name} is already installed`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -37,38 +53,38 @@ export function useInstallApp() {
       return;
     }
 
+    // Show grid selection dialog
+    setPendingApp(app);
+    setShowGridSelection(true);
+  };
+
+  const installToGrid = async (app: App, gridIndex: number) => {
     setIsInstalling(true);
 
     try {
       // Create a copy of the current sections
       const updatedSections = [...sections];
 
-      // Find the grid by developer name or create it if it doesn't exist
-      let gridIndex = updatedSections.findIndex(section => section.title === app.developer);
-      if (gridIndex === -1) {
-        gridIndex = 0;
-        updatedSections.unshift({
-          title: app.developer,
-          grid: [],
-          gridColumns: 2
-        });
-      }
-
       // Create the new grid item for the app
       const newGridItem = {
         type: 'IFRAME',
-        width: app.appSize.width,
-        height: app.appSize.height,
+        width: app.app.defaultGridSize.width,
+        height: app.app.defaultGridSize.height,
         properties: {
-          src: app.appLink
+          src: app.app.url
         }
       };
 
-      // Add the new grid item to the grid
+      // Add the new grid item to the selected grid
       updatedSections[gridIndex].grid.push(newGridItem);
 
+      // Wrap sections in the new LSP28TheGrid structure
+      const gridData = {
+        LSP28TheGrid: updatedSections
+      };
+
       // Upload updated metadata to IPFS
-      const metadataIpfsUrl = await uploadMetadataToIPFS(updatedSections);
+      const metadataIpfsUrl = await uploadMetadataToIPFS(gridData);
 
       // Encode the data with LSP28TheGrid schema
       const schema = [{
@@ -85,7 +101,7 @@ export function useInstallApp() {
       const encodedData = erc725.encodeData([{
         keyName: 'LSP28TheGrid',
         value: {
-          json: updatedSections,
+          json: gridData,
           url: `ipfs://${metadataIpfsUrl.split('/ipfs/')[1]}`,
         },
       }]);
@@ -115,7 +131,7 @@ export function useInstallApp() {
       // Update UI immediately after transaction is submitted
       setSections(updatedSections);
 
-      toast(`${app.name} installed successfully`, {
+      toast(`${app.app.name} installed successfully`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -143,7 +159,7 @@ export function useInstallApp() {
 
     } catch (error) {
       console.error("Error installing app:", error);
-      toast(`Failed to install ${app.name}`, {
+      toast(`Failed to install ${app.app.name}`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -157,7 +173,34 @@ export function useInstallApp() {
     }
   };
 
+  const handleGridSelect = (gridIndex: number) => {
+    if (pendingApp) {
+      installToGrid(pendingApp, gridIndex);
+      setPendingApp(null);
+    }
+    setShowGridSelection(false);
+  };
+
+  const handleGridSelectionCancel = () => {
+    setPendingApp(null);
+    setShowGridSelection(false);
+  };
+
   const handleUninstall = async (app: App) => {
+    // Check if user is connected
+    if (!accounts || accounts.length === 0 || !upClient) {
+      toast("Connect your Universal Profile to uninstall apps", {
+        duration: 3000,
+        position: "bottom-center",
+        style: {
+          background: "#dc2626",
+          color: "#ffffff",
+          border: "1px solid #dc2626"
+        }
+      });
+      return;
+    }
+
     setIsUninstalling(true);
 
     try {
@@ -167,14 +210,19 @@ export function useInstallApp() {
           ...section,
           grid: section.grid.filter(item => 
             !(item.type === 'IFRAME' && 
-              item.properties.src === app.appLink)
+              item.properties.src === app.app.url)
           )
         }))
         // Remove sections with empty grids
         .filter(section => section.grid.length > 0);
 
+      // Wrap sections in the new LSP28TheGrid structure
+      const gridData = {
+        LSP28TheGrid: updatedSections
+      };
+
       // Upload updated metadata to IPFS
-      const metadataIpfsUrl = await uploadMetadataToIPFS(updatedSections);
+      const metadataIpfsUrl = await uploadMetadataToIPFS(gridData);
 
       // Encode the data with LSP28TheGrid schema
       const schema = [{
@@ -191,7 +239,7 @@ export function useInstallApp() {
       const encodedData = erc725.encodeData([{
         keyName: 'LSP28TheGrid',
         value: {
-          json: updatedSections,
+          json: gridData,
           url: `ipfs://${metadataIpfsUrl.split('/ipfs/')[1]}`,
         },
       }]);
@@ -221,7 +269,7 @@ export function useInstallApp() {
       // Update UI immediately after transaction is submitted
       setSections(updatedSections);
 
-      toast(`${app.name} uninstalled successfully`, {
+      toast(`${app.app.name} uninstalled successfully`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -249,7 +297,7 @@ export function useInstallApp() {
 
     } catch (error) {
       console.error("Error uninstalling app:", error);
-      toast(`Failed to uninstall ${app.name}`, {
+      toast(`Failed to uninstall ${app.app.name}`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -268,6 +316,11 @@ export function useInstallApp() {
     handleUninstall,
     isInstalling,
     isUninstalling,
-    isInstalled: checkIfInstalled
+    isInstalled: checkIfInstalled,
+    showGridSelection,
+    setShowGridSelection,
+    pendingApp,
+    handleGridSelect,
+    handleGridSelectionCancel
   };
 } 

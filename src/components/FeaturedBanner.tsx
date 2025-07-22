@@ -6,21 +6,32 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { FeaturedApp, getPrimaryCategory } from "@/data/appCatalog";
+import { featuredApps } from "@/data/appCatalog";
 import { useInstallApp } from "@/hooks/useInstallApp";
+import { useGrid } from "@/app/components/providers/gridProvider";
+import GridSelectionDialog from "./GridSelectionDialog";
 
 interface FeaturedBannerProps {
-  apps: FeaturedApp[];
   onAppClick: (app: FeaturedApp) => void;
 }
 
-export default function FeaturedBanner({ apps, onAppClick }: FeaturedBannerProps) {
-  const { handleInstall, isInstalling, isInstalled } = useInstallApp();
+export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
+  const { sections } = useGrid();
+  const { 
+    handleInstall, 
+    isInstalling, 
+    isInstalled,
+    showGridSelection,
+    setShowGridSelection,
+    handleGridSelect,
+    handleGridSelectionCancel
+  } = useInstallApp();
 
   return (
     <section className="mb-8">
       <Carousel className="w-full" opts={{ align: "start" }}>
         <CarouselContent>
-          {apps.map((app) => {
+          {featuredApps.map((app) => {
             const appIsInstalled = isInstalled(app);
             
             return (
@@ -47,14 +58,14 @@ export default function FeaturedBanner({ apps, onAppClick }: FeaturedBannerProps
                   <div className="absolute bottom-4 left-4 flex items-center space-x-2">
                     <div className="relative h-7 w-7 rounded-full overflow-hidden">
                       <Image 
-                        src={app.appIcon || app.icon} 
-                        alt={app.appName || app.name}
+                        src={app.icon || ""} 
+                        alt={app.app.name}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div className="flex space-x-1">
-                      <p className="text-xs text-white font-medium">{app.appName || app.name}</p>
+                      <p className="text-xs text-white font-medium">{app.app.name}</p>
                       <p className="text-xs text-gray-300">{getPrimaryCategory(app)}</p>
                     </div>
                   </div>
@@ -93,6 +104,16 @@ export default function FeaturedBanner({ apps, onAppClick }: FeaturedBannerProps
           })}
         </CarouselContent>
       </Carousel>
+
+      {/* Grid Selection Dialog */}
+      <GridSelectionDialog
+        open={showGridSelection}
+        onOpenChange={setShowGridSelection}
+        sections={sections}
+        appName="App"
+        onGridSelect={handleGridSelect}
+        onCancel={handleGridSelectionCancel}
+      />
     </section>
   );
 }

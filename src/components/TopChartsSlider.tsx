@@ -1,4 +1,4 @@
-import { App, getAppsByCategory } from "@/data/appCatalog";
+import { App, getAppsByCategory, getPrimaryCategory } from "@/data/appCatalog";
 import Image from "next/image";
 import {
   Carousel,
@@ -97,25 +97,21 @@ export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderPro
                     className="flex items-center py-3 px-1 cursor-pointer hover:bg-gray-50"
                     onClick={() => onAppClick(app)}
                   >
-                    {/* Rank number */}
-                    <span className="text-gray-400 font-medium mr-4 w-3 text-right">
-                      {groupIndex * 3 + index + 1}
-                    </span>
-                    
-                    {/* App icon */}
-                    <div className="relative h-12 w-12 rounded-xl overflow-hidden mr-3">
+                    <div className="relative w-full aspect-square mb-2 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                       <Image
-                        src={app.icon}
-                        alt={app.name}
+                        src={app.icon || ""}
+                        alt={app.app.name}
                         fill
                         className="object-contain"
                       />
                     </div>
                     
-                    {/* App details */}
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium">{app.name}</h3>
-                      <p className="text-xs text-gray-500">{app.categories[0]}</p>
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center mb-1">
+                        <span className="text-xl font-bold mr-2">{index + 1}</span>
+                      </div>
+                      <h3 className="text-sm font-medium">{app.app.name}</h3>
+                      <p className="text-xs text-gray-600">{getPrimaryCategory(app)}</p>
                     </div>
                   </div>
                 ))}

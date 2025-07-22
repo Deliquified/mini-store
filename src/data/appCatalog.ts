@@ -62,29 +62,27 @@ import notesScreenshot2 from "./icons/deliquified-notes/image_2.png"
 
 // App Types and Interfaces
 export interface App {
-  id: string;
-  name: string;
-  icon: string;
-  banner: string;
   categories: string[];
-  subCategory?: string;
-  developer: string;
-  size?: string;
-  downloads?: string;
-  tags?: string[];
-  
-  // New required fields
-  universalProfile: string;
-  appName: string;
-  appIcon: string;
-  appAbout: string;
-  appLink: string;
-  appSize: {
-    width: number;
-    height: number;
+  publisherProfile: string;
+  app: {
+    profile: string;
+    name: string;
+    url: string;
+    sourceCode?: string;
+    defaultGridSize: {
+      width: number;
+      height: number;
+    };
+    previewImages: string[];
   };
-  images: string[];
-  featured: boolean;
+  
+  // Legacy fields for backward compatibility (will be removed later)
+  id?: string;
+  icon?: string;
+  banner?: string;
+  developer?: string;
+  tags?: string[];
+  featured?: boolean;
 }
 
 export interface FeaturedApp extends App {
@@ -101,222 +99,217 @@ export interface Category {
 // All apps in the store
 export const apps: Record<string, App> = {
   "defolio-multisend": {
+    categories: ["DeFi", "Infrastructure"],
+    publisherProfile: "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
+    app: {
+      profile: "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
+      name: "Multisend: Send Tokens & NFTs",
+      url: "https://multisend-alpha.vercel.app/",
+      sourceCode: "https://github.com/deliquified/multisend",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        defolioMultisendScreenshot1.src,
+        defolioMultisendScreenshot2.src,
+        defolioMultisendScreenshot3.src,
+        defolioMultisendScreenshot4.src,
+        defolioMultisendScreenshot5.src
+      ]
+    },
+    // Legacy fields
     id: "defolio-multisend",
-    name: "Multisend",
     icon: defolioMultisend.src,
     banner: defolioMultisendBanner.src,
-    categories: ["DeFi", "Infrastructure"],
     developer: "Deliquified Labs",
-    tags: ["defi", "multisend", "defolio", "portfolio", "wallet"],
-
-    universalProfile: "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
-    appName: "Multisend: Send Tokens & NFTs",
-    appIcon: defolioMultisend.src,
-    appAbout: "Defolio's flagship feature - Multisend is a simple way to send tokens, NFTs and collections to recipients with ease. No more selecting each token and sending them one by one. Multisend allows you to send multiple tokens and NFTs at once, with a single click. Developed by Deliquified Labs.",
-    appLink: "https://multisend-alpha.vercel.app/",
-    appSize: {
-      width: 1,
-      height: 2
-    },
-    images: [
-      defolioMultisendScreenshot1.src,
-      defolioMultisendScreenshot2.src,
-      defolioMultisendScreenshot3.src,
-      defolioMultisendScreenshot4.src,
-      defolioMultisendScreenshot5.src
-    ],
     featured: true
   },
   "stakingverse-staking": {
+    categories: ['DeFi', 'Staking'],
+    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+    app: {
+      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+      name: "Stakingverse: Stake Your LYX",
+      url: 'https://app.stakingverse.io/staking-widget',
+      defaultGridSize: {
+        width: 1,
+        height: 1
+      },
+      previewImages: [
+        stakingverseStakingScreenshot1.src,
+        stakingverseStakingScreenshot2.src
+      ]
+    },
+    // Legacy fields
     id: "stakingverse-staking",
-    name: "Stakingverse Staking",
     icon: stakingverseStaking.src,
     banner: stakingverseStakingBanner.src,
-    categories: ['DeFi', 'Staking'],
     developer: 'Stakingverse',
-    tags: ['staking', 'defi', 'stakingverse', "liquid staking"],
-    universalProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    appName: "Stakingverse: Stake Your LYX",
-    appIcon: stakingverseStaking.src,
-    appAbout: "Stake your LYX tokens and earn rewards in a secure and easy way. Stakingverse's Staking Mini-App provides a secure and non-custodial platform for staking LYX on the LUKSO blockchain. The app allows users to deposit LYX into staking pools to earn rewards effortlessly, with features like auto-compounding to maximize returns. Users can stake any amount, monitor rewards through a dashboard, and withdraw funds with no lock-up period, though larger withdrawals may depend on the validator queue. Stakingverse takes a 10% fee on profits for LYX staking, ensuring transparency and reliability. The app is backed by partnerships with trusted projects like StakeWise and DIA, offering a seamless staking experience for both beginners and advanced users.",
-    appLink: 'https://app.stakingverse.io/staking-widget',
-    appSize: {
-      width: 1,
-      height: 1
-    },
-    images: [
-      stakingverseStakingScreenshot1.src,
-      stakingverseStakingScreenshot2.src
-    ],
-    featured: true    
+    featured: true
   },
   "deliquified-roasted": {
+    categories: ['Social'],
+    publisherProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
+    app: {
+      profile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
+      name: "Roasted: Roast Profiles",
+      url: 'https://roasted-green.vercel.app/',
+      defaultGridSize: {
+        width: 1,
+        height: 1
+      },
+      previewImages: [
+        deliquifiedRoastedScreenshot1.src,
+        deliquifiedRoastedScreenshot2.src,
+        deliquifiedRoastedScreenshot3.src,
+        deliquifiedRoastedScreenshot4.src,
+        deliquifiedRoastedScreenshot5.src,
+        deliquifiedRoastedScreenshot6.src
+      ]
+    },
+    // Legacy fields
     id: "deliquified-roasted",
-    name: "Roasted",
     icon: deliquifiedRoasted.src,
     banner: deliquifiedRoastedBanner.src,
-    categories: ['Social'],
     developer: 'Deliquified Labs',
-    tags: ['roasting', 'defi', 'deliquified', "roasted"],
-    universalProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
-    appName: "Roasted: Roast Profiles",
-    appIcon: deliquifiedRoasted.src,
-    appAbout: "Roasted is a simple and easy way to roast Universal Profiles on-chain! Get paid to be roasted, get paid to roast others. Create your own roast - or give Grok a hint and let him roast them for you!",
-    appLink: 'https://roasted-green.vercel.app/',
-    appSize: {
-      width: 1,
-      height: 1
-    },
-    images: [
-      deliquifiedRoastedScreenshot1.src,
-      deliquifiedRoastedScreenshot2.src,
-      deliquifiedRoastedScreenshot3.src,
-      deliquifiedRoastedScreenshot4.src,
-      deliquifiedRoastedScreenshot5.src,
-      deliquifiedRoastedScreenshot6.src
-    ],
-    featured: true    
+    featured: true
   },
   "aratta-labs-draco": {
+    categories: ['NFTs'],
+    publisherProfile: '0x8A985fe01eA908F5697975332260553c454f8F77',
+    app: {
+      profile: '0x8A985fe01eA908F5697975332260553c454f8F77',
+      name: "Dracos: Swipe & Mint",
+      url: 'https://thunder-dracos.vercel.app',
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        dracosScreenshot1.src,
+        dracosScreenshot2.src,
+      ]
+    },
+    // Legacy fields
     id: "aratta-labs-draco",
-    name: "Dracos",
     icon: dracos.src,
     banner: dracosBanner.src,
-    categories: ['NFTs'],
     developer: 'Aratta Labs',
-    tags: ['nft', 'aratta', 'draco', "nfts", "dracos", "lsp8"],
-    universalProfile: '0x8A985fe01eA908F5697975332260553c454f8F77',
-    appName: "Dracos: Swipe & Mint",
-    appIcon: dracos.src,
-    appAbout: "The Dracos Swipe Mini-App allows users to mint an LSP8 NFT collection directly within a LUKSO grid by one-click connecting their Universal Profile. With a dating app style swiping mechanism, the minter can choose to keep their newly acquired PFP or roll the dice and swipe it for another. The Dracos NFTs are generated in real time and each Draco that is swiped left on is immediately burned and replaced with a new option. The community gets to co-curate the collection in real time.",
-    appLink: 'https://thunder-dracos.vercel.app',
-    appSize: {
-      width: 1,
-      height: 2
-    },
-    images: [
-      dracosScreenshot1.src,
-      dracosScreenshot2.src,
-    ],
-    featured: true    
+    featured: true
   },
   "aratta-labs-pigmint": {
+    categories: ['Social', "NFTs"],
+    publisherProfile: '0x544051588d6a0713e164196c16024fdcff877540',
+    app: {
+      profile: '0x544051588d6a0713e164196c16024fdcff877540',
+      name: "Pigmint: Mint Your Mood",
+      url: 'https://pigmint.vercel.app/',
+      defaultGridSize: {
+        width: 2,
+        height: 2
+      },
+      previewImages: [
+        pigmintScreenshot1.src,
+        pigmintScreenshot2.src,
+        pigmintScreenshot3.src,
+      ]
+    },
+    // Legacy fields
     id: "aratta-labs-pigmint",
-    name: "Pigmint",
     icon: pigmint.src,
     banner: pigmintBanner.src,
-    categories: ['Social', "NFTs"],
     developer: 'Aratta Labs',
-    tags: ['nft', 'aratta', 'pigmint', "nfts", "lsp8"],
-    universalProfile: '0x544051588d6a0713e164196c16024fdcff877540',
-    appName: "Pigmint: Mint Your Mood",
-    appIcon: pigmint.src,
-    appAbout: "🚀 Why Pigmint?\n\
-    The digital world often lacks ambient, emotional context. Pigmint solves this by letting people show up on-chain in a more human way — their mood becomes part of their digital identity.\n\n\
-    How can this mini-app improve the social experience in web3?\n\
-    Spark ambient social interactions — moods and statuses invite comments, empathy or connection.\n\n\
-    Encourage routine check-ins — small updates like mood changes create habits and drive regular visits back to The Grid.\n\n\
-    Bring more life to Universal Profiles — beyond static NFTs, these dynamic avatars bring personality, movement and emotion to identity.",
-    appLink: 'https://pigmint.vercel.app/',
-    appSize: {
-      width: 2,
-      height: 2
-    },
-    images: [
-      pigmintScreenshot1.src,
-      pigmintScreenshot2.src,
-      pigmintScreenshot3.src,
-    ],
-    featured: true    
+    featured: true
   },
   "stakingverse-holders": {
+    categories: ["DeFi", "Staking", "Community", "Social"],
+    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+    app: {
+      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+      name: "Stakingverse: Holders",
+      url: 'https://app.stakingverse.io/holders-widget',
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        holdersScreenshot1.src,
+      ]
+    },
+    // Legacy fields
     id: "stakingverse-holders",
-    name: "Holders Leaderboard",
     icon: holders.src,
     banner: holdersBanner.src,
-    categories: ["DeFi", "Staking", "Community", "Social"],
     developer: 'Stakingverse',
-    tags: ['staking', 'defi', 'stakingverse', "liquid staking", "holders", "leaderboard"],
-    universalProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    appName: "Stakingverse: Holders",
-    appIcon: holders.src,
-    appAbout: "Track top sLYX holders and their staked LYX amounts. The leaderboard is updated in real time and shows the top 100 holders by staked LYX amount.",
-    appLink: 'https://app.stakingverse.io/holders-widget',
-    appSize: {
-      width: 1,
-      height: 2
-    },
-    images: [
-      holdersScreenshot1.src,
-    ],
-    featured: true    
+    featured: true
   },
   "stakingverse-tvl": {
+    categories: ["DeFi", "Staking"],
+    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+    app: {
+      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+      name: "Stakingverse: Track TVL",
+      url: 'https://stakingverse.io/tvl-widget',
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        tvlScreenshot1.src,
+      ]
+    },
+    // Legacy fields
     id: "stakingverse-tvl",
-    name: "Stakingverse TVL",
     icon: tvl.src,
     banner: tvlBanner.src,
-    categories: ["DeFi", "Staking"],
     developer: 'Stakingverse',
-    tags: ['staking', 'defi', 'stakingverse', "liquid staking", "holders", "tvl", "total value locked"],
-    universalProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    appName: "Stakingverse: Track TVL",
-    appIcon: tvl.src,
-    appAbout: "Track the total value locked in Stakingverse. The TVL is updated in real time and shows the total value locked in Stakingverse.",
-    appLink: 'https://stakingverse.io/tvl-widget',
-    appSize: {
-      width: 1,
-      height: 2
-    },
-    images: [
-      tvlScreenshot1.src,
-    ],
-    featured: true    
+    featured: true
   },
   "stakingverse-dashboard": {
+    categories: ["DeFi", "Staking"],
+    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+    app: {
+      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
+      name: "Stakingverse: Dashboard",
+      url: 'https://stakingverse.io/dashboard',
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        dashboardScreenshot1.src,
+      ]
+    },
+    // Legacy fields
     id: "stakingverse-dashboard",
-    name: "Stakingverse Dashboard",
     icon: dashboard.src,
     banner: dashboardBanner.src,
-    categories: ["DeFi", "Staking"],
     developer: 'Stakingverse',
-    tags: ['staking', 'defi', 'stakingverse', "liquid staking", "holders", "tvl", "total value locked"],
-    universalProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    appName: "Stakingverse: Dashboard",
-    appIcon: dashboard.src,
-    appAbout: "The Stakingverse Dashboard is a comprehensive tool that provides an overview of your staked LYX on Stakingverse. It includes a your account summary, APY, staked balances, rewards, network analytics and more.",
-    appLink: 'https://stakingverse.io/dashboard',
-    appSize: {
-      width: 1,
-      height: 2
-    },
-    images: [
-      dashboardScreenshot1.src,
-    ],
-    featured: true    
+    featured: true
   },
   "deliquified-notes": {
+    categories: ["Social", "Infrastructure"],
+    publisherProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
+    app: {
+      profile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
+      name: "Notes: Take Notes Privately",
+      url: 'https://mini-notes-livid.vercel.app/',
+      defaultGridSize: {
+        width: 2,
+        height: 2
+      },
+      previewImages: [
+        notesScreenshot1.src,
+        notesScreenshot2.src,
+      ]
+    },
+    // Legacy fields
     id: "deliquified-notes",
-    name: "Notes",
     icon: notes.src,
     banner: notesBanner.src,
-    categories: ["Social", "Infrastructure"],
     developer: 'Deliquified Labs',
-    tags: ['notes', 'deliquified', "notes", "social", "defolio"],
-    universalProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
-    appName: "Notes: Take Notes Privately",
-    appIcon: notes.src,
-    appAbout: "Notes is a simple and easy way to create and manage your private notes. It's a private note-taking app that allows you to take notes and save them to your Universal Profile. Notes follow wherever your Universal Profile goes.",
-    appLink: 'https://mini-notes-livid.vercel.app/',
-    appSize: {
-      width: 2,
-      height: 2
-    },
-    images: [
-      notesScreenshot1.src,
-      notesScreenshot2.src,
-    ],
-    featured: true    
+    featured: true
   },
 };
 
@@ -408,7 +401,8 @@ export const categories: Record<string, Category> = {
 export const featuredApps: FeaturedApp[] = [
   {
     ...apps["defolio-multisend"],
-    title: "Send Tokens & NFTs"
+    title: "Send Tokens & NFTs",
+    banner: apps["defolio-multisend"].banner || ""
   }
 ];
 

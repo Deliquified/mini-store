@@ -52,6 +52,8 @@ interface GridSection {
   title: string;
   gridColumns: number;
   grid: GridItem[];
+  visibility?: "public" | "private";
+  isPrivate?: boolean; // Legacy property for backward compatibility
 }
 
 interface GridData {
@@ -88,8 +90,12 @@ export function GridProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function fetchGridData() {
-      if (!walletConnected || !accounts[0]) return;
+      if (!walletConnected || !accounts[0]) {
+        console.log('GridProvider: Not fetching - walletConnected:', walletConnected, 'accounts:', accounts);
+        return;
+      }
 
+      console.log('GridProvider: Starting fetch for account:', accounts[0]);
       setIsLoading(true);
       setError(null);
 
@@ -104,51 +110,64 @@ export function GridProvider({ children }: { children: ReactNode }) {
 
         // Fetch LSP28TheGrid data
         const fetchedData = await erc725js.getData('LSP28TheGrid');
-        console.log('Fetched grid data:', fetchedData);
+        console.log('GridProvider: Fetched raw data:', fetchedData);
 
-        if (fetchedData) {
+        if (fetchedData && fetchedData.value) {
           // Check if value is a VerifiableURI object
           const value = fetchedData.value as VerifiableURI;
+          console.log('GridProvider: Processed value:', value);
           
           // For VerifiableURI content, the value contains a URL to the grid data
           // We need to fetch the actual data from the URL
           if (value.url && typeof value.url === 'string' && value.url.startsWith('ipfs://')) {
             const ipfsHash = value.url.replace('ipfs://', '');
             const ipfsUrl = `${IPFS_GATEWAY}/${ipfsHash}`;
+            console.log('GridProvider: Fetching from IPFS URL:', ipfsUrl);
             
             const response = await fetch(ipfsUrl);
             if (!response.ok) {
-              throw new Error('Failed to fetch grid data from IPFS');
+              throw new Error(`Failed to fetch grid data from IPFS: ${response.status} ${response.statusText}`);
             }
             
             const gridData = await response.json();
-            console.log('Grid data from IPFS:', gridData);
+            console.log('GridProvider: Grid data from IPFS:', gridData);
             
             // Check if gridData is an array (for backward compatibility)
             if (Array.isArray(gridData)) {
+              console.log('GridProvider: Setting sections from array:', gridData);
               setSections(gridData);
             } 
             // Or if it has LSP28TheGrid property
             else if (gridData && gridData.LSP28TheGrid) {
               const theGrid = gridData.LSP28TheGrid;
+              console.log('GridProvider: Found LSP28TheGrid property:', theGrid);
               // Check if LSP28TheGrid is an array or a single section
               if (Array.isArray(theGrid)) {
+                console.log('GridProvider: Setting sections from LSP28TheGrid array:', theGrid);
                 setSections(theGrid);
               } else {
+                console.log('GridProvider: Setting sections from single LSP28TheGrid object:', [theGrid]);
                 setSections([theGrid]);
               }
             } else {
+              console.error('GridProvider: Invalid grid data format:', gridData);
               setError('Invalid grid data format');
+              setSections([]);
             }
           } else {
+            console.error('GridProvider: Invalid or missing IPFS URL:', value);
             setError('Invalid IPFS URL in grid data');
+            setSections([]);
           }
         } else {
+          console.log('GridProvider: No grid data found in response');
           setError('No grid data found');
+          setSections([]);
         }
       } catch (err) {
+        console.error('GridProvider: Error fetching grid data:', err);
         setError('Failed to load grid data');
-        console.error('Error fetching grid data:', err);
+        setSections([]);
       } finally {
         setIsLoading(false);
       }

@@ -31,13 +31,13 @@ export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
               >
                 <div className="relative w-full aspect-square mb-2 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                   <Image
-                    src={app.icon}
-                    alt={app.name}
+                    src={app.icon || ""}
+                    alt={app.app.name}
                     fill
                     className="object-contain"
                   />
                 </div>
-                <p className="text-[14px] font-medium w-full opacity-80">{app.appName}</p>
+                <p className="text-[14px] font-medium w-full opacity-80">{app.app.name}</p>
               </div>
             </CarouselItem>
           ))}

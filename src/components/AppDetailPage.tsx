@@ -16,6 +16,7 @@ import { createPublicClient, http } from 'viem';
 import { lukso } from 'viem/chains';
 import { useInstallApp } from "@/hooks/useInstallApp";
 import { GET_UNIVERSAL_PROFILE } from "@/app/components/apollo/query";
+import GridSelectionDialog from "./GridSelectionDialog";
 
 // Helper function to convert IPFS URL to HTTP URL
 const convertIpfsUrl = (url: string): string => {
@@ -113,12 +114,23 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
   const [publisherData, setPublisherData] = useState<UniversalProfileDetails | null>(null);
   const [isLoadingPublisher, setIsLoadingPublisher] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const { handleInstall, handleUninstall, isInstalling, isUninstalling, isInstalled } = useInstallApp();
+  const { 
+    handleInstall, 
+    handleUninstall, 
+    isInstalling, 
+    isUninstalling, 
+    isInstalled,
+    showGridSelection,
+    setShowGridSelection,
+    pendingApp,
+    handleGridSelect,
+    handleGridSelectionCancel
+  } = useInstallApp();
 
   useEffect(() => {
     // Fetch profile data if universal profile is available
-    if (app.universalProfile && typeof app.universalProfile === 'string') {
-      fetchProfileData(app.universalProfile);
+    if (app.publisherProfile && typeof app.publisherProfile === 'string') {
+      fetchProfileData(app.publisherProfile);
     }
   }, [app]);
 
@@ -163,13 +175,13 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
   };
 
   const goToPreviousImage = () => {
-    if (!app?.images) return;
-    setCurrentImageIndex((prev) => (prev === 0 ? app.images.length - 1 : prev - 1));
+    if (!app?.app.previewImages) return;
+    setCurrentImageIndex((prev) => (prev === 0 ? app.app.previewImages.length - 1 : prev - 1));
   };
 
   const goToNextImage = () => {
-    if (!app?.images) return;
-    setCurrentImageIndex((prev) => (prev === app.images.length - 1 ? 0 : prev + 1));
+    if (!app?.app.previewImages) return;
+    setCurrentImageIndex((prev) => (prev === app.app.previewImages.length - 1 ? 0 : prev + 1));
   };
 
   // Handle keyboard navigation
@@ -208,8 +220,8 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
         <div className="pt-4 flex">
           <div className="relative h-20 w-20 rounded-xl overflow-hidden mr-4">
             <Image 
-              src={app.icon} 
-              alt={app.name}
+              src={app.icon || ""} 
+              alt={app.app.name}
               fill
               quality={95}
               className="object-contain"
@@ -217,12 +229,12 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
           </div>
           
           <div className="flex-1">
-            <h1 className="text-xl font-bold font-roboto mb-1">{app.appName}</h1>
+            <h1 className="text-xl font-bold font-roboto mb-1">{app.app.name}</h1>
             <p className="text-sm text-blue-600 mb-1">{app.developer}</p>
           </div>
         </div>
 
-        {/* Downloads & Size Info */}
+        {/* Downloads & Size Info 
         <div className="flex mb-4">
           {app.downloads && (
             <div className="mr-6">
@@ -230,10 +242,10 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
               <p className="text-xs text-gray-600">Downloads</p>
             </div>
           )}
-        </div>
+        </div>*/}
 
         {/* Install/Uninstall Button */}
-        <div className="mb-4">
+        <div className="my-4">
           <Button 
             className={`w-full h-10 rounded-md relative disabled:opacity-50 ${
               isInstalled(app) 
@@ -264,7 +276,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
         </div>
 
         {/* Screenshots Carousel */}
-        {app.images && app.images.length > 0 && (
+        {app.app.previewImages && app.app.previewImages.length > 0 && (
           <div className="mt-6 mb-2">
             <Carousel 
               opts={{
@@ -276,7 +288,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
               className="w-full mb-4"
             >
               <CarouselContent className="pt-1 -ml-4 flex flex-row">
-                {app.images.map((image, index) => (
+                {app.app.previewImages.map((image, index) => (
                   <CarouselItem key={index} className="pl-4 basis-[140px] h-[200px] shrink-0">
                     <div 
                       className="relative h-full w-[120px] overflow-hidden rounded-xl cursor-pointer border border-gray-200"
@@ -284,7 +296,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                     >
                       <Image 
                         src={image} 
-                        alt={`${app.name} screenshot ${index + 1}`}
+                        alt={`${app.app.name} screenshot ${index + 1}`}
                         fill
                         quality={90}
                         sizes="120px"
@@ -306,16 +318,15 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
           </div>
           <div className="relative">
             <p className={`text-sm text-gray-700 ${isDescriptionExpanded ? '' : 'line-clamp-4'}`}>
-              {app.appAbout}
+              {/* For now using legacy field, will need to fetch from profile later */}
+              {app.developer ? `Built by ${app.developer}` : "No description available"}
             </p>
-            {app.appAbout?.length > 280 && (
-              <button
-                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className="text-blue-600 text-sm font-medium mt-1 hover:text-blue-700"
-              >
-                {isDescriptionExpanded ? 'See less' : 'See more'}
-              </button>
-            )}
+            <button
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className="text-blue-600 text-sm font-medium mt-1 hover:text-blue-700"
+            >
+              {isDescriptionExpanded ? 'See less' : 'See more'}
+            </button>
           </div>
         </div>
 
@@ -413,7 +424,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
       </main>
 
       {/* Full-screen Image Viewer */}
-      {openImageViewer && app.images && app.images.length > 0 && (
+      {openImageViewer && app.app.previewImages && app.app.previewImages.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
           {/* Image container with smaller bounded size */}
           <div className="relative bg-white rounded-lg overflow-hidden max-w-[85%] max-h-[85vh] w-auto shadow-xl">
@@ -428,8 +439,8 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
             
             <div className="relative w-full h-full flex items-center justify-center">
               <Image
-                src={app.images[currentImageIndex]}
-                alt={`${app.name} screenshot ${currentImageIndex + 1}`}
+                src={app.app.previewImages[currentImageIndex]}
+                alt={`${app.app.name} screenshot ${currentImageIndex + 1}`}
                 className="object-contain"
                 width={275}
                 height={800}
@@ -440,7 +451,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
 
             {/* Image counter */}
             <div className="absolute bottom-3 left-0 right-0 text-center text-black text-sm">
-              {currentImageIndex + 1} / {app.images.length}
+              {currentImageIndex + 1} / {app.app.previewImages.length}
             </div>
           </div>
 
@@ -462,6 +473,16 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
           </button>
         </div>
       )}
+
+      {/* Grid Selection Dialog */}
+      <GridSelectionDialog
+        open={showGridSelection}
+        onOpenChange={setShowGridSelection}
+        sections={sections}
+        appName={app.app.name}
+        onGridSelect={handleGridSelect}
+        onCancel={handleGridSelectionCancel}
+      />
     </div>
   );
 } 

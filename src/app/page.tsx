@@ -28,17 +28,12 @@ export default function Home() {
   const { profileData } = useProfile();
   const { walletConnected, isMiniApp, isLoading } = useUpProvider();
   const [activeTab, setActiveTab] = useState("explore");
-  const [showConnectionAlert, setShowConnectionAlert] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
 
   // Update connection status when wallet connection changes
   useEffect(() => {
     setIsConnected(walletConnected);
-    setShowConnectionAlert(false);
-    if (!walletConnected) {
-      setShowConnectionAlert(true);
-    }
   }, [walletConnected]);
 
   // Handle scroll events
@@ -129,28 +124,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-white dark:bg-gray-900">
-      {/* Connection Alert Dialog */}
-      <AlertDialog open={showConnectionAlert} onOpenChange={setShowConnectionAlert}>
-        <AlertDialogContent className="max-w-[90%] rounded-xl border border-gray-200 dark:border-gray-700 p-0 overflow-hidden shadow-lg">
-          <div className="bg-white dark:bg-gray-800 p-6">
-            <div className="mb-6 flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-gray-700 flex items-center justify-center">
-                <Squirrel className="h-8 w-8 text-[#0066FF]" />
-              </div>
-            </div>
-            
-            <AlertDialogHeader className="space-y-3 text-center">
-              <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                Universal Profile Required
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-center text-gray-600 dark:text-gray-300 text-sm">
-                Please connect your Universal Profile to use the Mini-Store.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Top Header */}
       {activeTab !== "apps" && activeTab !== "search" && (
         <header className={`sticky top-0 z-10 bg-white dark:bg-gray-800 transition-shadow duration-200 ${
@@ -162,6 +135,7 @@ export default function Home() {
             </div>
             
             <div className="flex items-center">
+              {/* Original UP Avatar - commented out for potential reversion
               <Avatar className="ml-2 h-8 w-8">
                 <AvatarImage 
                   src={profileData?.profileImages?.[0]?.url || ""} 
@@ -169,6 +143,21 @@ export default function Home() {
                 />
                 <AvatarFallback className="text-xs">UP</AvatarFallback>
               </Avatar>
+              */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="text-[#0066FF] border-[#0066FF] hover:bg-[#0066FF] hover:text-white"
+                asChild
+              >
+                <a 
+                  href="https://github.com/Deliquified/mini-apps" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  Submit Mini-App
+                </a>
+              </Button>
             </div>
           </div>
         </header>
@@ -181,7 +170,7 @@ export default function Home() {
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 w-full z-10 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto grid grid-cols-3 items-center py-2">
+        <div className="container mx-auto grid grid-cols-2 items-center py-2">
           <Button 
             variant="ghost" 
             className={`${exploreStyles.button} hover:bg-transparent focus:bg-transparent active:bg-transparent`}
@@ -191,14 +180,14 @@ export default function Home() {
             <span className={exploreStyles.text}>Explore</span>
           </Button>
           
-          <Button 
+          {/*<Button 
             variant="ghost" 
             className={`${appsStyles.button} hover:bg-transparent focus:bg-transparent active:bg-transparent`}
             onClick={() => handleTabChange("apps")}
           >
             <LayoutGrid className={appsStyles.icon} />
             <span className={appsStyles.text}>My Apps</span>
-          </Button>
+          </Button>*/}
           
           <Button 
             variant="ghost" 

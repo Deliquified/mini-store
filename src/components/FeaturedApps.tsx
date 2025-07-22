@@ -17,17 +17,17 @@ export default function FeaturedApps() {
           <div className="flex items-start gap-4">
             <div className="relative h-16 w-16 rounded-xl overflow-hidden flex-shrink-0">
               <Image
-                src={app.icon}
-                alt={app.name}
+                src={app.icon || ""}
+                alt={app.app.name}
                 fill
                 className="object-contain"
               />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold mb-1">{app.appName}</h3>
+              <h3 className="text-xl font-semibold mb-1">{app.app.name}</h3>
               <p className="text-blue-600 text-sm mb-2">{app.developer}</p>
               <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-                {app.appAbout}
+                {app.developer ? `Built by ${app.developer}` : "No description available"}
               </p>
               <div className="flex flex-wrap gap-2">
                 {app.categories.slice(0, 2).map((category, index) => (

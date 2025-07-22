@@ -9,6 +9,8 @@ import { searchApps } from "@/utils/search";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useInstallApp } from "@/hooks/useInstallApp";
+import { useGrid } from "@/app/components/providers/gridProvider";
+import GridSelectionDialog from "./GridSelectionDialog";
 
 interface SearchPageProps {
   onAppClick: (app: App) => void;
@@ -37,11 +39,19 @@ const categoryIcons: Record<string, React.ReactNode> = {
 
 export default function SearchPage({ onAppClick }: SearchPageProps) {
   const { profileData } = useProfile();
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const { sections } = useGrid();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchResults, setSearchResults] = useState<App[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const { handleInstall, isInstalling } = useInstallApp();
+  const { 
+    handleInstall, 
+    isInstalling,
+    showGridSelection,
+    setShowGridSelection,
+    handleGridSelect,
+    handleGridSelectionCancel
+  } = useInstallApp();
 
   useEffect(() => {
     if (searchTerm.trim()) {
@@ -136,24 +146,24 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
                 className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-4"
                 onClick={() => onAppClick(app)}
               >
-                <div className="relative w-16 h-16 flex-shrink-0">
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden mr-3">
                   <Image
-                    src={app.icon}
-                    alt={app.name}
+                    src={app.icon || ""}
+                    alt={app.app.name}
                     fill
-                    className="rounded-xl object-contain"
+                    className="object-contain"
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {app.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {app.developer}
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    {app.categories.join(" • ")}
-                  </p>
+                <div className="flex-1">
+                  <h3 className="font-medium">{app.app.name}</h3>
+                  <p className="text-sm text-gray-600">{app.developer}</p>
+                  <div className="flex gap-1 mt-1">
+                    {app.categories.slice(0, 2).map((category, idx) => (
+                      <span key={idx} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                        {category}
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 <Button
                   variant="outline"
@@ -185,6 +195,16 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
           </div>
         )}
       </div>
+
+      {/* Grid Selection Dialog */}
+      <GridSelectionDialog
+        open={showGridSelection}
+        onOpenChange={setShowGridSelection}
+        sections={sections}
+        appName="App"
+        onGridSelect={handleGridSelect}
+        onCancel={handleGridSelectionCancel}
+      />
     </div>
   );
 } 

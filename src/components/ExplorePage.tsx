@@ -31,15 +31,15 @@ const TopChartItem = ({ app, rank, onAppClick }: TopChartItemProps) => (
     <span className="text-gray-500 font-medium text-lg mr-2 w-4">{rank}</span>
     <div className="relative w-16 h-16 rounded-xl overflow-hidden mr-3">
       <Image 
-        src={app.icon} 
-        alt={app.name}
+        src={app.icon || ""} 
+        alt={app.app.name}
         fill
         className="object-cover"
       />
     </div>
     <div className="flex-1">
-      <h3 className="font-medium text-gray-900 dark:text-white truncate">{app.name}</h3>
-      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{app.subCategory || app.categories.join(", ")}</p>
+      <h3 className="font-medium text-gray-900 dark:text-white truncate">{app.app.name}</h3>
+      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{app.categories.join(", ")}</p>
     </div>
   </div>
 );
@@ -79,7 +79,7 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
 
   return (
     <div className="space-y-6 pb-4">
-      <FeaturedBanner apps={featured} onAppClick={onAppClick} />
+      <FeaturedBanner onAppClick={onAppClick} />
       <AppSlider title="DeFi apps" apps={defiApps} onAppClick={onAppClick} />
       <TopChartsSlider apps={Object.values(apps)} onAppClick={onAppClick} />
       <AppSlider title="Recommended for you" apps={recommendedApps} onAppClick={onAppClick} />
