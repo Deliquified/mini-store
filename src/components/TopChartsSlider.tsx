@@ -97,7 +97,11 @@ export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderPro
                     className="flex items-center py-3 px-1 cursor-pointer hover:bg-gray-50"
                     onClick={() => onAppClick(app)}
                   >
-                    <div className="relative w-full aspect-square mb-2 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <span className="text-lg font-bold mr-3 w-6 flex-shrink-0 text-gray-500">
+                      {(groupIndex * 3) + index + 1}
+                    </span>
+                    
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-gray-100 flex-shrink-0 mr-3">
                       <Image
                         src={app.icon || ""}
                         alt={app.app.name}
@@ -106,12 +110,9 @@ export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderPro
                       />
                     </div>
                     
-                    <div className="flex flex-col w-full">
-                      <div className="flex items-center mb-1">
-                        <span className="text-xl font-bold mr-2">{index + 1}</span>
-                      </div>
-                      <h3 className="text-sm font-medium">{app.app.name}</h3>
-                      <p className="text-xs text-gray-600">{getPrimaryCategory(app)}</p>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <h3 className="text-sm font-medium truncate">{app.app.name}</h3>
+                      <p className="text-xs text-gray-600 truncate">{getPrimaryCategory(app)}</p>
                     </div>
                   </div>
                 ))}

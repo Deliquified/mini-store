@@ -203,9 +203,9 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
   }, [openImageViewer, app]);
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-white">
+    <div className="flex flex-col w-full min-h-screen bg-background">
       {/* Header with back button */}
-      <header className="sticky top-0 z-10 bg-white flex items-center border-b border-gray-200">
+      <header className="sticky top-0 z-10 bg-background flex items-center border-b border-gray-200">
         <button 
           onClick={onBack}
           className="py-1 rounded-full flex items-center gap-2"

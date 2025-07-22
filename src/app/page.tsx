@@ -31,6 +31,11 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('HomePage: isLoading:', isLoading, 'isMiniApp:', isMiniApp, 'walletConnected:', walletConnected);
+  }, [isLoading, isMiniApp, walletConnected]);
+
   // Update connection status when wallet connection changes
   useEffect(() => {
     setIsConnected(walletConnected);
@@ -85,9 +90,10 @@ export default function Home() {
   // Show loading screen while determining context
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-white flex flex-col items-center justify-center">
-        <Squirrel className="h-16 w-16 text-[#0066FF] mb-4" />
-        <span className="text-xl font-semibold">Mini Store</span>
+      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center">
+        <Squirrel className="h-16 w-16 text-[#0066FF] mb-4 animate-pulse" />
+        <span className="text-xl font-semibold mb-2">Mini Store</span>
+        <span className="text-sm text-gray-500">Loading...</span>
       </div>
     );
   }
@@ -123,10 +129,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen w-full bg-background dark:bg-gray-900">
       {/* Top Header */}
       {activeTab !== "apps" && activeTab !== "search" && (
-        <header className={`sticky top-0 z-10 bg-white dark:bg-gray-800 transition-shadow duration-200 ${
+        <header className={`sticky top-0 z-10 bg-background dark:bg-gray-800 transition-shadow duration-200 ${
           scrolled ? 'shadow-md' : 'shadow-none'
         }`}>
           <div className="container mx-auto px-4 py-2 flex justify-between items-center">
@@ -169,7 +175,7 @@ export default function Home() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full z-10 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <nav className="fixed bottom-0 w-full z-10 bg-background dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="container mx-auto grid grid-cols-2 items-center py-2">
           <Button 
             variant="ghost" 

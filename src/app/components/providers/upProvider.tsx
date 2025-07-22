@@ -62,8 +62,13 @@ const UpContext = createContext<UpProviderContext | undefined>(undefined);
 // Function to check if we're in a mini-app context (iframe)
 const isMiniAppContext = () => {
   try {
-    return window.self !== window.top;
+    const isInIframe = window.self !== window.top;
+    console.log('isMiniAppContext: window.self !== window.top:', isInIframe);
+    console.log('isMiniAppContext: window.self:', window.self);
+    console.log('isMiniAppContext: window.top:', window.top);
+    return isInIframe;
   } catch (e) {
+    console.log('isMiniAppContext: Error accessing window.top, assuming iframe context:', e);
     return true;
   }
 };
@@ -97,8 +102,22 @@ export function UpProvider({ children }: UpProviderProps) {
 
   // Handle client-side detection of iframe context
   useEffect(() => {
-    setIsMiniApp(isMiniAppContext());
+    console.log('UpProvider: Initializing...');
+    const miniAppContext = isMiniAppContext();
+    console.log('UpProvider: isMiniAppContext result:', miniAppContext);
+    setIsMiniApp(miniAppContext);
     setIsLoading(false);
+    console.log('UpProvider: Loading set to false');
+
+    // Fallback timeout to ensure loading doesn't get stuck
+    const fallbackTimeout = setTimeout(() => {
+      console.log('UpProvider: Fallback timeout triggered, forcing loading to false');
+      setIsLoading(false);
+    }, 3000); // 3 seconds timeout
+
+    return () => {
+      clearTimeout(fallbackTimeout);
+    };
   }, []);
 
   const client = useMemo(() => {

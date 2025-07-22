@@ -85,9 +85,9 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-background dark:bg-gray-900">
       {/* Search Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800">
+      <div className="sticky top-0 z-10 bg-background dark:bg-gray-800">
         <div className="container mx-auto py-3">
           <div className="flex items-center gap-3 justify-between">
             <div className="flex-1 relative">
