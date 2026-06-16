@@ -1,130 +1,61 @@
 # Adding apps to the LUKSO App Store catalog
 
-This is the canonical instruction set for adding (or editing) apps in the store.
-An agent should be able to complete the task using **only** this file.
+Adding an app is **two steps**: drop in some images, add one JSON object.
+No TypeScript edits, no imports, no duplicated fields. An agent should be able to
+complete the task using only this file.
 
-## Where everything lives
+## Where things live
 
-- **Catalog file (the only code you edit):** `src/data/appCatalog.ts`
-- **Image assets:** `src/data/icons/<app-slug>/`
+- **Catalog data (the only file you edit):** `src/data/apps.json`
+- **Images (by folder convention):** `public/apps/<slug>/`
+- You do **not** edit `src/data/appCatalog.ts` — it's just the loader that turns the
+  JSON + images into what the UI renders.
 
-Adding one app = drop in some images + 3 small edits to `appCatalog.ts`
-(an `import` block, an entry in the `apps` record, and — optionally — a featured entry).
+`<slug>` is a lowercase, hyphenated id, e.g. `awesome-swap`, `stakingverse-staking`.
 
 ---
 
-## Step 1 — Add the image assets
+## Step 1 — Add the images
 
-Create a folder named after the app's slug and add the art:
+Create `public/apps/<slug>/` and add **PNG** files with these exact names:
 
 ```
-src/data/icons/<app-slug>/
-  logo.png        # square app icon            (required)
-  banner.png      # wide banner, ~16:9         (required)
-  image_1.png     # screenshot 1               (at least one required)
-  image_2.png     # screenshot 2 (optional)
+public/apps/<slug>/
+  logo.png          # square app icon                 (required)
+  banner.png        # wide banner, ~16:9              (required)
+  screenshot-1.png  # first screenshot                (at least one required)
+  screenshot-2.png  # numbered sequentially, no gaps
   ...
 ```
 
-- Formats: `.png`, `.jpg`, or `.webp` all work.
-- `logo` should be **square**; screenshots are shown in a phone-style carousel (tall/portrait looks best).
-- The `<app-slug>` is a lowercase, hyphenated id, e.g. `stakingverse-staking`, `aratta-labs-pigmint`.
-
-> Images are imported as **static assets** (see Step 2). Do not reference them as
-> raw `https://` URL strings — a remote URL would also require adding its host to
-> `images.domains` in `next.config.js`.
+- Files **must be `.png`** and use these exact names (`logo`, `banner`, `screenshot-N`).
+- `logo` should be square; screenshots look best tall/portrait (shown in a phone-style carousel).
+- Number screenshots starting at `1` with no gaps. The count goes in the JSON (`screenshots`).
+- If you only have `.jpg`/`.webp`, convert first. On macOS:
+  `sips -s format png input.webp --out logo.png`
 
 ---
 
-## Step 2 — Import the assets at the top of `appCatalog.ts`
+## Step 2 — Add an entry to `src/data/apps.json`
 
-Follow the existing pattern. Each asset is imported, then used via `.src`:
+The file is one big JSON object keyed by `<slug>`. Add your app:
 
-```ts
-// <App Name>
-import myappLogo from "./icons/<app-slug>/logo.png";
-import myappBanner from "./icons/<app-slug>/banner.png";
-import myappShot1 from "./icons/<app-slug>/image_1.png";
-import myappShot2 from "./icons/<app-slug>/image_2.png";
-```
-
----
-
-## Step 3 — Add an entry to the `apps` record
-
-The **object key MUST equal the `id` field** (both are the slug). Use this template:
-
-```ts
-"<app-slug>": {
-  categories: ["DeFi", "Staking"],            // 1+ values, each from the valid list below
-  publisherProfile: "0x...",                  // publisher's Universal Profile address
-  app: {
-    profile: "0x...",                         // usually the same as publisherProfile
-    name: "App Name: Short Tagline",          // display name shown across the store
-    url: "https://your-app.example.com/",     // the LIVE app — this is what "Open" launches
-    sourceCode: "https://github.com/...",     // optional
-    defaultGridSize: { width: 1, height: 2 }, // size when installed into a UP grid (1x1, 1x2, 2x2…)
-    previewImages: [                          // screenshots, in display order
-      myappShot1.src,
-      myappShot2.src,
-    ],
-  },
-
-  // Typed as "legacy / optional" but the UI actively uses them — always include:
-  id: "<app-slug>",                           // MUST match the object key above
-  icon: myappLogo.src,                        // square icon (cards, lists, detail page)
-  banner: myappBanner.src,                    // featured / hero banner
-  developer: "Publisher Name",                // shown under the app name
-  featured: true,                             // optional; marks it eligible for featured surfaces
-},
-```
-
-### (Optional) feature it on the home hero
-
-To show an app in the big featured carousel, also add it to the `featuredApps`
-array in the same file:
-
-```ts
-export const featuredApps: FeaturedApp[] = [
-  {
-    ...apps["<app-slug>"],
-    title: "Catchy Hero Title",
-    banner: apps["<app-slug>"].banner || "",
-  },
-];
-```
-
----
-
-## Worked example (copy-paste reference)
-
-```ts
-// --- top of file: imports ---
-// Awesome Swap
-import awesomeswapLogo from "./icons/awesome-swap/logo.png";
-import awesomeswapBanner from "./icons/awesome-swap/banner.png";
-import awesomeswapShot1 from "./icons/awesome-swap/image_1.png";
-import awesomeswapShot2 from "./icons/awesome-swap/image_2.png";
-
-// --- inside the `apps` record ---
+```jsonc
 "awesome-swap": {
-  categories: ["DeFi", "Exchanges"],
-  publisherProfile: "0x1234567890abcdef1234567890abcdef12345678",
-  app: {
-    profile: "0x1234567890abcdef1234567890abcdef12345678",
-    name: "Awesome Swap: Trade on LUKSO",
-    url: "https://awesome-swap.example.com/",
-    sourceCode: "https://github.com/awesome/swap",
-    defaultGridSize: { width: 1, height: 2 },
-    previewImages: [awesomeswapShot1.src, awesomeswapShot2.src],
-  },
-  id: "awesome-swap",
-  icon: awesomeswapLogo.src,
-  banner: awesomeswapBanner.src,
-  developer: "Awesome Labs",
-  featured: false,
-},
+  "name": "Awesome Swap: Trade on LUKSO",   // display name
+  "url": "https://awesome-swap.example.com/", // the LIVE app — what "Open" launches
+  "developer": "Awesome Labs",               // shown under the app name
+  "publisher": "0x1234…",                    // publisher's Universal Profile address
+  "categories": ["DeFi", "Exchanges"],       // 1+ from the valid list below
+  "gridSize": [1, 2],                        // [width, height] when added to a UP grid
+  "screenshots": 2,                          // how many screenshot-N.png you added
+  "featured": true,                          // optional; eligibility flag
+  "sourceCode": "https://github.com/…",      // optional
+  "featuredTitle": "Trade Anything"          // optional; if set, shows in the home hero
+}
 ```
+
+That's it. The slug in the JSON key must match the image folder name in `public/apps/`.
 
 ---
 
@@ -132,23 +63,17 @@ import awesomeswapShot2 from "./icons/awesome-swap/image_2.png";
 
 | Field | Required? | Notes |
 |---|---|---|
-| `categories` | yes | Array of 1+ valid category keys (see below) |
-| `publisherProfile` | yes | Universal Profile address `0x…` |
-| `app.profile` | yes | UP address (usually same as `publisherProfile`) |
-| `app.name` | yes | Display name |
-| `app.url` | yes | Live app URL — what the **Open** button launches |
-| `app.defaultGridSize` | yes | `{ width, height }` in grid units (e.g. `1x1`, `1x2`, `2x2`) |
-| `app.previewImages` | yes | At least one screenshot, via `<import>.src` |
-| `id` | yes (in practice) | Must equal the record key |
-| `icon` | yes (in practice) | Without it, cards/lists render blank |
-| `banner` | yes (in practice) | Needed for featured/hero surfaces |
-| `developer` | yes (in practice) | Shown under the app name |
-| `app.sourceCode` | optional | "View source" link |
-| `tags` | optional | Extra search keywords |
-| `featured` | optional | Eligibility flag |
-
-> `id` / `icon` / `banner` / `developer` are declared optional in the `App` type
-> ("legacy fields"), but the components depend on them. Treat them as required.
+| `name` | yes | Display name |
+| `url` | yes | Live app URL — what the **Open** button launches |
+| `developer` | yes | Shown under the app name |
+| `publisher` | yes | Publisher's Universal Profile address `0x…` |
+| `categories` | yes | Array of 1+ valid category names (below) |
+| `gridSize` | yes | `[width, height]` in grid units, e.g. `[1,1]`, `[1,2]`, `[2,2]` |
+| `screenshots` | yes | Integer count of `screenshot-N.png` files you added |
+| `featured` | optional | Eligibility flag (default `false`) |
+| `sourceCode` | optional | "View source" link |
+| `tags` | optional | Extra search keywords (array of strings) |
+| `featuredTitle` | optional | If present, the app appears in the home **hero carousel** with this title |
 
 ---
 
@@ -159,33 +84,31 @@ Art, AI, Brands, Community, DAOs, DeFi, Exchanges, Fashion, Gaming,
 Infrastructure, Marketplaces, Music, NFTs, Security, Social, Staking
 ```
 
-To introduce a **new** category, also add it to the `categories` record in the
-same file, or the category-browse view won't list it:
+To introduce a **new** category, add it to the `categories` object in
+`src/data/appCatalog.ts` (this is the one case that needs a code edit):
 
 ```ts
-"Lending": { id: "Lending", name: "Lending", displayName: "Lending" },
+Lending: { id: "Lending", name: "Lending", displayName: "Lending" },
 ```
 
 ---
 
 ## Common mistakes to avoid
 
-- **Object key ≠ `id`.** They must be identical; lookup/install logic relies on both.
-- **Pasting image URLs** instead of importing assets. Always `import x from "./icons/<slug>/logo.png"` then use `x.src`.
-- **Invented category names.** Use the list above, or register the new category first.
-- **Missing `icon`/`banner`/`developer`.** Cards/hero will look broken without them.
-- **Wrong `app.url`.** This is the real app users open — double-check it loads.
+- **Slug mismatch.** The JSON key and the `public/apps/<slug>/` folder name must be identical.
+- **Wrong image names/format.** Must be `logo.png`, `banner.png`, `screenshot-1.png`, … (PNG only).
+- **`screenshots` count wrong.** It must equal the number of `screenshot-N.png` files, numbered with no gaps — a too-high count produces broken images.
+- **Invented category names.** Use the list above, or register the category first.
+- **Wrong `url`.** This is the real app users open — verify it loads.
+- **Invalid JSON.** No trailing commas, no comments in the actual file (the examples above use `//` only for explanation).
 
 ---
 
 ## Verify before committing
 
-After editing, run both checks (must both pass):
-
 ```bash
-npx tsc --noEmit
-npm run build
+npx tsc --noEmit   # validates the catalog shape
+npm run build      # confirms it compiles and images resolve
 ```
 
-`tsc` catches type/shape mistakes; `npm run build` confirms the catalog and images
-compile. Do **not** rely on `npm run dev` for CI (it's a long-running server).
+Both must pass. Don't use `npm run dev` for verification (it's a long-running server).
