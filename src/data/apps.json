@@ -1,0 +1,94 @@
+{
+  "defolio-multisend": {
+    "name": "Multisend: Send Tokens & NFTs",
+    "url": "https://multisend-alpha.vercel.app/",
+    "sourceCode": "https://github.com/deliquified/multisend",
+    "developer": "Deliquified Labs",
+    "publisher": "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
+    "categories": ["DeFi", "Infrastructure"],
+    "gridSize": [1, 2],
+    "screenshots": 5,
+    "featured": true,
+    "featuredTitle": "Send Tokens & NFTs"
+  },
+  "stakingverse-staking": {
+    "name": "Stakingverse: Stake Your LYX",
+    "url": "https://app.stakingverse.io/staking-widget",
+    "developer": "Stakingverse",
+    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
+    "categories": ["DeFi", "Staking"],
+    "gridSize": [1, 1],
+    "screenshots": 2,
+    "featured": true
+  },
+  "deliquified-roasted": {
+    "name": "Roasted: Roast Profiles",
+    "url": "https://roasted-green.vercel.app/",
+    "developer": "Deliquified Labs",
+    "publisher": "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
+    "categories": ["Social"],
+    "gridSize": [1, 1],
+    "screenshots": 6,
+    "featured": true
+  },
+  "aratta-labs-draco": {
+    "name": "Dracos: Swipe & Mint",
+    "url": "https://thunder-dracos.vercel.app",
+    "developer": "Aratta Labs",
+    "publisher": "0x8A985fe01eA908F5697975332260553c454f8F77",
+    "categories": ["NFTs"],
+    "gridSize": [1, 2],
+    "screenshots": 2,
+    "featured": true
+  },
+  "aratta-labs-pigmint": {
+    "name": "Pigmint: Mint Your Mood",
+    "url": "https://pigmint.vercel.app/",
+    "developer": "Aratta Labs",
+    "publisher": "0x544051588d6a0713e164196c16024fdcff877540",
+    "categories": ["Social", "NFTs"],
+    "gridSize": [2, 2],
+    "screenshots": 3,
+    "featured": true
+  },
+  "stakingverse-holders": {
+    "name": "Stakingverse: Holders",
+    "url": "https://app.stakingverse.io/holders-widget",
+    "developer": "Stakingverse",
+    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
+    "categories": ["DeFi", "Staking", "Community", "Social"],
+    "gridSize": [1, 2],
+    "screenshots": 1,
+    "featured": true
+  },
+  "stakingverse-tvl": {
+    "name": "Stakingverse: Track TVL",
+    "url": "https://stakingverse.io/tvl-widget",
+    "developer": "Stakingverse",
+    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
+    "categories": ["DeFi", "Staking"],
+    "gridSize": [1, 2],
+    "screenshots": 1,
+    "featured": true
+  },
+  "stakingverse-dashboard": {
+    "name": "Stakingverse: Dashboard",
+    "url": "https://stakingverse.io/dashboard",
+    "developer": "Stakingverse",
+    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
+    "categories": ["DeFi", "Staking"],
+    "gridSize": [1, 2],
+    "screenshots": 1,
+    "featured": true
+  },
+  "deliquified-notes": {
+    "name": "Notes: Take Notes Privately",
+    "url": "https://mini-notes-livid.vercel.app/",
+    "developer": "Deliquified Labs",
+    "publisher": "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
+    "categories": ["Social", "Infrastructure"],
+    "gridSize": [2, 2],
+    "screenshots": 2,
+    "featured": true
+  }
+}
