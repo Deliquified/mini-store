@@ -1,24 +1,44 @@
-import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 import { Providers } from "./components/providers/providers";
-import logo from "../../public/squirrel.svg";
 
-const roboto = Roboto({
-  subsets: ['latin'],
-  variable: '--font-roboto',
-  weight: ['300', '400', '500', '700', '900'],
-  display: 'swap',
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Mini Store",
-  description: "Your friendly neighborhood app store for Universal Profile mini-apps",
+  title: "LUKSO App Store",
+  description:
+    "Discover and launch apps for your Universal Profile. Browse the LUKSO App Store anywhere, or add apps directly to your Grid.",
   icons: {
-    icon: logo.src
-  }
+    icon: "/favicon.ico",
+  },
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FBFAFA" },
+    { media: "(prefers-color-scheme: dark)", color: "#0E1014" },
+  ],
+};
+
+// SSR-safe theme bootstrap: sets .dark on <html> before paint to avoid FOUC.
+// classList mutation is invisible to React hydration (no markup branching on theme).
+const themeBootstrap = `(function(){try{var t=localStorage.getItem('theme');var d=t? t==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;var c=document.documentElement.classList;d?c.add('dark'):c.remove('dark');}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -26,10 +46,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${roboto.variable} font-sans antialiased`}
-      >
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+      </head>
+      <body className={`${inter.variable} ${display.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

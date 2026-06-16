@@ -1,0 +1,214 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Compass, Loader2, Search } from "lucide-react";
+
+import { useUpProvider } from "@/app/components/providers/upProvider";
+import { useProfile } from "@/app/components/providers/profileProvider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Wordmark } from "@/components/Wordmark";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import ExplorePage from "@/components/ExplorePage";
+import SearchPage from "@/components/SearchPage";
+import AppDetailPage from "@/components/AppDetailPage";
+import { App } from "@/data/appCatalog";
+import { cn } from "@/lib/utils";
+
+type Tab = "explore" | "search";
+
+export interface StoreExperienceProps {
+  /**
+   * "auto"  -> route '/'. Renders the full store in BOTH desktop and grid.
+   * "standalone" -> route '/store'. Shareable full-screen storefront.
+   * Context (grid vs standalone) is still detected at runtime via useUpProvider.
+   */
+  variant?: "auto" | "standalone";
+}
+
+const TABS: { id: Tab; label: string; icon: typeof Compass }[] = [
+  { id: "explore", label: "Explore", icon: Compass },
+  { id: "search", label: "Search", icon: Search },
+];
+
+export default function StoreExperience({ variant = "auto" }: StoreExperienceProps) {
+  const { walletConnected, isLoading } = useUpProvider();
+  const { profileData } = useProfile();
+  const prefersReducedMotion = useReducedMotion();
+
+  const [activeTab, setActiveTab] = useState<Tab>("explore");
+  const [selectedApp, setSelectedApp] = useState<App | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleAppClick = (app: App) => {
+    window.scrollTo(0, 0);
+    setSelectedApp(app);
+  };
+
+  const handleBackFromApp = () => {
+    window.scrollTo(0, 0);
+    setSelectedApp(null);
+  };
+
+  const handleTabChange = (tab: Tab) => {
+    window.scrollTo(0, 0);
+    setActiveTab(tab);
+    setSelectedApp(null);
+  };
+
+  // ---- Loading state: full-bleed, centered Wordmark + spinner (no squirrel) ----
+  if (isLoading) {
+    return (
+      <div className="min-h-[100dvh] w-full grid place-items-center bg-background bg-glow-ambient">
+        <div className="flex flex-col items-center gap-4">
+          <Wordmark size="lg" />
+          <Loader2 className="h-5 w-5 animate-spin text-brand" aria-hidden="true" />
+          <span className="sr-only">Loading the LUKSO App Store</span>
+        </div>
+      </div>
+    );
+  }
+
+  const renderContent = () => {
+    if (selectedApp) {
+      return <AppDetailPage app={selectedApp} onBack={handleBackFromApp} />;
+    }
+    switch (activeTab) {
+      case "search":
+        return <SearchPage onAppClick={handleAppClick} />;
+      case "explore":
+      default:
+        return <ExplorePage onAppClick={handleAppClick} />;
+    }
+  };
+
+  return (
+    <div className="relative flex min-h-[100dvh] w-full flex-col bg-background">
+      {/* Ambient brand glow anchored top-center */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-glow-ambient",
+          !prefersReducedMotion && "animate-glow-drift"
+        )}
+      />
+
+      {/* ---- Sticky glass header ---- */}
+      <header
+        className={cn(
+          "glass-nav sticky top-0 z-30 pt-safe transition-shadow duration-200",
+          scrolled && "shadow-glass"
+        )}
+      >
+        <div className="mx-auto flex h-[52px] w-full max-w-[1200px] items-center justify-between px-4 md:h-16 md:px-6">
+          <Wordmark />
+
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Desktop tab links */}
+            <nav className="hidden items-center gap-1 md:flex" aria-label="Store sections">
+              {TABS.map((t) => {
+                const isActive = activeTab === t.id && !selectedApp;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => handleTabChange(t.id)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative px-3 h-9 text-sm font-medium transition-colors min-h-[44px]",
+                      isActive
+                        ? "text-brand-text"
+                        : "text-text-secondary hover:text-foreground"
+                    )}
+                  >
+                    {t.label}
+                    {isActive && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <ThemeToggle />
+
+            {/* Connection-aware slot */}
+            {walletConnected && profileData ? (
+              <span className="glass inline-flex h-10 min-h-[44px] items-center gap-2 rounded-full px-2 pr-3">
+                <Avatar className="h-7 w-7">
+                  <AvatarImage
+                    src={profileData?.profileImages?.[0]?.url || ""}
+                    alt={profileData?.name || "Universal Profile"}
+                  />
+                  <AvatarFallback className="text-[10px]">UP</AvatarFallback>
+                </Avatar>
+                <span className="hidden max-w-[120px] truncate text-sm font-medium text-foreground sm:inline">
+                  {profileData?.name || "Profile"}
+                </span>
+              </span>
+            ) : (
+              <a
+                href="https://universaleverything.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-foreground sm:inline-flex sm:items-center sm:min-h-[44px]"
+              >
+                Open in Universal Profile
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* ---- Mobile top segmented control (we never own the bottom edge) ---- */}
+        <div className="border-t border-border px-4 py-2 md:hidden">
+          <div className="seg-track w-full">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const isActive = activeTab === t.id && !selectedApp;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleTabChange(t.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex flex-1 items-center justify-center gap-1.5 min-h-[44px]",
+                    isActive ? "seg-active" : "seg-inactive"
+                  )}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </header>
+
+      {/* ---- Main content ---- */}
+      <main className="relative z-10 flex-1">
+        <motion.div
+          key={selectedApp ? "detail" : activeTab}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto w-full max-w-[1200px] px-4 py-6 pb-safe-content md:px-6"
+        >
+          {renderContent()}
+        </motion.div>
+      </main>
+    </div>
+  );
+}

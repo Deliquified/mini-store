@@ -59,16 +59,23 @@ interface UpProviderContext {
 
 const UpContext = createContext<UpProviderContext | undefined>(undefined);
 
+// Dev-only debug logger so diagnostics never ship to production.
+const debugLog = (...args: unknown[]) => {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(...args);
+  }
+};
+
 // Function to check if we're in a mini-app context (iframe)
 const isMiniAppContext = () => {
   try {
     const isInIframe = window.self !== window.top;
-    console.log('isMiniAppContext: window.self !== window.top:', isInIframe);
-    console.log('isMiniAppContext: window.self:', window.self);
-    console.log('isMiniAppContext: window.top:', window.top);
+    debugLog('isMiniAppContext: window.self !== window.top:', isInIframe);
+    debugLog('isMiniAppContext: window.self:', window.self);
+    debugLog('isMiniAppContext: window.top:', window.top);
     return isInIframe;
   } catch (e) {
-    console.log('isMiniAppContext: Error accessing window.top, assuming iframe context:', e);
+    debugLog('isMiniAppContext: Error accessing window.top, assuming iframe context:', e);
     return true;
   }
 };
@@ -102,16 +109,16 @@ export function UpProvider({ children }: UpProviderProps) {
 
   // Handle client-side detection of iframe context
   useEffect(() => {
-    console.log('UpProvider: Initializing...');
+    debugLog('UpProvider: Initializing...');
     const miniAppContext = isMiniAppContext();
-    console.log('UpProvider: isMiniAppContext result:', miniAppContext);
+    debugLog('UpProvider: isMiniAppContext result:', miniAppContext);
     setIsMiniApp(miniAppContext);
     setIsLoading(false);
-    console.log('UpProvider: Loading set to false');
+    debugLog('UpProvider: Loading set to false');
 
     // Fallback timeout to ensure loading doesn't get stuck
     const fallbackTimeout = setTimeout(() => {
-      console.log('UpProvider: Fallback timeout triggered, forcing loading to false');
+      debugLog('UpProvider: Fallback timeout triggered, forcing loading to false');
       setIsLoading(false);
     }, 3000); // 3 seconds timeout
 
@@ -219,9 +226,7 @@ export function UpProvider({ children }: UpProviderProps) {
 
   return (
     <UpContext.Provider value={data}>
-      <div className="min-h-screen flex items-center justify-center">
-        {children}
-      </div>
+      <div className="min-h-[100dvh] w-full">{children}</div>
     </UpContext.Provider>
   );
 }

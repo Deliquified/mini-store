@@ -7,10 +7,12 @@ import { ApolloProvider } from '@apollo/client';
 import { client } from '../apollo/apolloClient';
 import { ProfileProvider } from "./profileProvider";
 import { GridProvider } from "./gridProvider";
+import { ThemeProvider } from "./themeProvider";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <UpProvider>
+      <ThemeProvider>
         <ApolloProvider client={client}>
           <ProfileProvider>
             <GridProvider>
@@ -19,6 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
             </GridProvider>
           </ProfileProvider>
         </ApolloProvider>
+      </ThemeProvider>
     </UpProvider>
   );
 }
