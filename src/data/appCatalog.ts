@@ -60,6 +60,66 @@ import notesBanner from "./icons/deliquified-notes/background.png"
 import notesScreenshot1 from "./icons/deliquified-notes/image_1.png"
 import notesScreenshot2 from "./icons/deliquified-notes/image_2.png"
 
+// Universal Profiles Mobile
+import universalProfilesMobileLogo from "./icons/universal-profiles-mobile/logo.png"
+import universalProfilesMobileBanner from "./icons/universal-profiles-mobile/banner.png"
+import universalProfilesMobileScreenshot1 from "./icons/universal-profiles-mobile/image_1.png"
+
+// Universal Everything
+import universalEverythingLogo from "./icons/universal-everything/logo.png"
+import universalEverythingBanner from "./icons/universal-everything/banner.png"
+import universalEverythingScreenshot1 from "./icons/universal-everything/image_1.png"
+
+// Universal Page
+import universalPageLogo from "./icons/universal-page/logo.png"
+import universalPageBanner from "./icons/universal-page/banner.png"
+import universalPageScreenshot1 from "./icons/universal-page/image_1.png"
+
+// Phlox
+import phloxLogo from "./icons/phlox/logo.png"
+import phloxBanner from "./icons/phlox/banner.png"
+import phloxScreenshot1 from "./icons/phlox/image_1.png"
+
+// Profile Jump
+import profileJumpLogo from "./icons/profile-jump/logo.png"
+import profileJumpBanner from "./icons/profile-jump/banner.png"
+import profileJumpScreenshot1 from "./icons/profile-jump/image_1.png"
+
+// Airdropper
+import airdropperLogo from "./icons/airdropper/logo.png"
+import airdropperBanner from "./icons/airdropper/banner.png"
+import airdropperScreenshot1 from "./icons/airdropper/image_1.png"
+
+// Proof of Presence
+import proofOfPresenceLogo from "./icons/proof-of-presence/logo.png"
+import proofOfPresenceBanner from "./icons/proof-of-presence/banner.png"
+import proofOfPresenceScreenshot1 from "./icons/proof-of-presence/image_1.png"
+
+// Nexus Hyperlane Bridge
+import nexusBridgeLogo from "./icons/nexus-hyperlane-bridge/logo.png"
+import nexusBridgeBanner from "./icons/nexus-hyperlane-bridge/banner.png"
+import nexusBridgeScreenshot1 from "./icons/nexus-hyperlane-bridge/image_1.png"
+
+// Forever Moments
+import foreverMomentsLogo from "./icons/forever-moments/logo.png"
+import foreverMomentsBanner from "./icons/forever-moments/banner.png"
+import foreverMomentsScreenshot1 from "./icons/forever-moments/image_1.png"
+
+// Hup
+import hupLogo from "./icons/hup/logo.png"
+import hupBanner from "./icons/hup/banner.png"
+import hupScreenshot1 from "./icons/hup/image_1.png"
+
+// Common Ground
+import commonGroundLogo from "./icons/common-ground/logo.png"
+import commonGroundBanner from "./icons/common-ground/banner.png"
+import commonGroundScreenshot1 from "./icons/common-ground/image_1.png"
+
+// Team Finance LUKSO Tools
+import teamFinanceLuksoToolsLogo from "./icons/team-finance-lukso-tools/logo.png"
+import teamFinanceLuksoToolsBanner from "./icons/team-finance-lukso-tools/banner.png"
+import teamFinanceLuksoToolsScreenshot1 from "./icons/team-finance-lukso-tools/image_1.png"
+
 // App Types and Interfaces
 export interface App {
   categories: string[];
@@ -309,6 +369,272 @@ export const apps: Record<string, App> = {
     icon: notes.src,
     banner: notesBanner.src,
     developer: 'Deliquified Labs',
+    featured: true
+  },
+  "universal-profiles-mobile": {
+    categories: ["Social", "Community"],
+    publisherProfile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+    app: {
+      profile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+      name: "Universal Profiles Mobile: Your Web3 Identity",
+      url: "https://my.universalprofile.cloud/apps",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        universalProfilesMobileScreenshot1.src,
+      ]
+    },
+    id: "universal-profiles-mobile",
+    icon: universalProfilesMobileLogo.src,
+    banner: universalProfilesMobileBanner.src,
+    developer: "Universal Everything",
+    tags: ["UP Mobile", "Universal Profiles", "Wallet"],
+    featured: true
+  },
+  "universal-everything": {
+    categories: ["Social", "Community"],
+    publisherProfile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+    app: {
+      profile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+      name: "Universal Everything: Explore Profiles",
+      url: "https://universaleverything.io/",
+      sourceCode: "https://github.com/lukso-network/universalprofile.cloud",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        universalEverythingScreenshot1.src,
+      ]
+    },
+    id: "universal-everything",
+    icon: universalEverythingLogo.src,
+    banner: universalEverythingBanner.src,
+    developer: "Universal Everything",
+    tags: ["Profiles", "Assets", "Explorer"],
+    featured: true
+  },
+  "universal-page": {
+    categories: ["NFTs", "Marketplaces"],
+    publisherProfile: "0x00311eea40ef2687dc1049e5b6261481126fb9f3",
+    app: {
+      profile: "0x00311eea40ef2687dc1049e5b6261481126fb9f3",
+      name: "Universal Page: NFTs 2.0 Marketplace",
+      url: "https://universal.page/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        universalPageScreenshot1.src,
+      ]
+    },
+    id: "universal-page",
+    icon: universalPageLogo.src,
+    banner: universalPageBanner.src,
+    developer: "Universal Page",
+    tags: ["Marketplace", "Collectibles", "NFTs"],
+    featured: true
+  },
+  "phlox": {
+    categories: ["DeFi", "Exchanges"],
+    publisherProfile: "0xa49c3e8f135307eee2ac4dd813972ce7d4ead418",
+    app: {
+      profile: "0xa49c3e8f135307eee2ac4dd813972ce7d4ead418",
+      name: "Phlox: Trade on LUKSO",
+      url: "https://phlox.social/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        phloxScreenshot1.src,
+      ]
+    },
+    id: "phlox",
+    icon: phloxLogo.src,
+    banner: phloxBanner.src,
+    developer: "Phlox",
+    tags: ["Swap", "Liquidity", "DeFi"],
+    featured: true
+  },
+  "profile-jump": {
+    categories: ["Social", "Infrastructure"],
+    publisherProfile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+    app: {
+      profile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+      name: "Profile Jump: Discover Universal Profiles",
+      url: "https://profilejump.com/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        profileJumpScreenshot1.src,
+      ]
+    },
+    id: "profile-jump",
+    icon: profileJumpLogo.src,
+    banner: profileJumpBanner.src,
+    developer: "Profile Jump",
+    tags: ["Discovery", "Analytics", "Profiles"],
+    featured: true
+  },
+  "airdropper": {
+    categories: ["Community", "Infrastructure"],
+    publisherProfile: "0xed64cb1062990e7fc2433443584a60989c0ae75d",
+    app: {
+      profile: "0xed64cb1062990e7fc2433443584a60989c0ae75d",
+      name: "Airdropper: Drop Tokens and Collectibles",
+      url: "https://airdropper.universaleverything.io/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        airdropperScreenshot1.src,
+      ]
+    },
+    id: "airdropper",
+    icon: airdropperLogo.src,
+    banner: airdropperBanner.src,
+    developer: "Universal Everything",
+    tags: ["Airdrops", "Tokens", "Collectibles"],
+    featured: true
+  },
+  "proof-of-presence": {
+    categories: ["Community", "Social"],
+    publisherProfile: "0x700a452919208d57fdc886af56d23c9ce548d0c4",
+    app: {
+      profile: "0x700a452919208d57fdc886af56d23c9ce548d0c4",
+      name: "Proof of Presence: Event Credentials",
+      url: "https://pop.universaleverything.io/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        proofOfPresenceScreenshot1.src,
+      ]
+    },
+    id: "proof-of-presence",
+    icon: proofOfPresenceLogo.src,
+    banner: proofOfPresenceBanner.src,
+    developer: "Universal Everything",
+    tags: ["Events", "Credentials", "Attendance"],
+    featured: true
+  },
+  "nexus-hyperlane-bridge": {
+    categories: ["Infrastructure", "DeFi"],
+    publisherProfile: "0x177bf7d2f499743502604dbf3d42d837b10dc50c",
+    app: {
+      profile: "0x177bf7d2f499743502604dbf3d42d837b10dc50c",
+      name: "Nexus Bridge: Bridge LYX",
+      url: "https://usenexus.org/?origin=lukso&destination=ethereum&token=0xC210B2cB65ed3484892167F5e05F7ab496Ab0598",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        nexusBridgeScreenshot1.src,
+      ]
+    },
+    id: "nexus-hyperlane-bridge",
+    icon: nexusBridgeLogo.src,
+    banner: nexusBridgeBanner.src,
+    developer: "Hyperlane",
+    tags: ["Bridge", "LYX", "Ethereum"],
+    featured: true
+  },
+  "forever-moments": {
+    categories: ["Social", "Art", "NFTs"],
+    publisherProfile: "0x7de347be3ebaed43065182fcaba462796d6f2a83",
+    app: {
+      profile: "0x7de347be3ebaed43065182fcaba462796d6f2a83",
+      name: "Forever Moments: Preserve Memories",
+      url: "https://www.forevermoments.life/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        foreverMomentsScreenshot1.src,
+      ]
+    },
+    id: "forever-moments",
+    icon: foreverMomentsLogo.src,
+    banner: foreverMomentsBanner.src,
+    developer: "Forever Moments",
+    tags: ["Moments", "Memories", "Collections"],
+    featured: true
+  },
+  "hup": {
+    categories: ["Social", "Community"],
+    publisherProfile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+    app: {
+      profile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+      name: "Hup: Onchain Social Network",
+      url: "https://www.hup.social/",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        hupScreenshot1.src,
+      ]
+    },
+    id: "hup",
+    icon: hupLogo.src,
+    banner: hupBanner.src,
+    developer: "Hup",
+    tags: ["Social", "Posts", "Onchain"],
+    featured: true
+  },
+  "common-ground": {
+    categories: ["Community", "Social"],
+    publisherProfile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+    app: {
+      profile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+      name: "Common Ground: Community Coordination",
+      url: "https://app.cg/e/lukso",
+      sourceCode: "https://github.com/Common-Ground-DAO/commonground",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        commonGroundScreenshot1.src,
+      ]
+    },
+    id: "common-ground",
+    icon: commonGroundLogo.src,
+    banner: commonGroundBanner.src,
+    developer: "Common Ground",
+    tags: ["Community", "Coordination", "Events"],
+    featured: true
+  },
+  "team-finance-lukso-tools": {
+    categories: ["Infrastructure", "DeFi"],
+    publisherProfile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+    app: {
+      profile: "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
+      name: "Team Finance: LUKSO Token Tools",
+      url: "https://app.team.finance/token-creation?ref=blog.team.finance",
+      defaultGridSize: {
+        width: 1,
+        height: 2
+      },
+      previewImages: [
+        teamFinanceLuksoToolsScreenshot1.src,
+      ]
+    },
+    id: "team-finance-lukso-tools",
+    icon: teamFinanceLuksoToolsLogo.src,
+    banner: teamFinanceLuksoToolsBanner.src,
+    developer: "Team Finance",
+    tags: ["Token Creator", "Vesting", "Locks", "Multisender"],
     featured: true
   },
 };
