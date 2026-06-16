@@ -67,21 +67,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(theme === "dark" ? "light" : "dark");
   }, [theme, setTheme]);
 
-  // Follow system changes only while the user has made no explicit choice.
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (e: MediaQueryListEvent) => {
-      let hasChoice = false;
-      try {
-        hasChoice = localStorage.getItem("theme") != null;
-      } catch {
-        /* ignore */
-      }
-      if (!hasChoice) applyTheme(e.matches ? "dark" : "light");
-    };
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, [applyTheme]);
+  // Light is the default; dark is opt-in only. We intentionally do NOT follow
+  // the OS prefers-color-scheme, so users on a dark system still get light first.
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, mounted }}>

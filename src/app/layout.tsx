@@ -38,7 +38,8 @@ export const viewport: Viewport = {
 
 // SSR-safe theme bootstrap: sets .dark on <html> before paint to avoid FOUC.
 // classList mutation is invisible to React hydration (no markup branching on theme).
-const themeBootstrap = `(function(){try{var t=localStorage.getItem('theme');var d=t? t==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;var c=document.documentElement.classList;d?c.add('dark'):c.remove('dark');}catch(e){}})();`;
+// Light is the default — dark only applies when the user has explicitly chosen it.
+const themeBootstrap = `(function(){try{var d=localStorage.getItem('theme')==='dark';var c=document.documentElement.classList;d?c.add('dark'):c.remove('dark');}catch(e){}})();`;
 
 export default function RootLayout({
   children,
