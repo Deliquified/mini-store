@@ -18,11 +18,12 @@ const display = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "LUKSO App Store",
+  title: "LUKSO UP!Store",
   description:
-    "Discover and launch apps for your Universal Profile. Browse the LUKSO App Store anywhere, or add apps directly to your Grid.",
+    "Discover and launch apps for your Universal Profile. Browse the LUKSO UP!Store anywhere, or add apps directly to your Grid.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/up-logo.png",
+    apple: "/up-logo.png",
   },
 };
 

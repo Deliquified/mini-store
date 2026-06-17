@@ -116,7 +116,7 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
       {/* Lead-in headline — the editorial top of the discover home */}
       <div className="-mb-2">
         <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-text-tertiary">
-          LUKSO App Store
+          LUKSO UP!Store
         </p>
         <h1 className="mt-1.5 font-display text-[30px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground md:text-[40px]">
           Discover apps for your{" "}

@@ -1,6 +1,6 @@
-# Mini Store - Your Universal Profile App Discovery Platform
+# LUKSO UP!Store - Your Universal Profile App Discovery Platform
 
-Mini Store is a decentralized app discovery platform built for the LUKSO ecosystem, designed to make it easy for users to find, install, and manage Universal Profile mini-apps. Think of it as the "App Store" for the LUKSO ecosystem, but with a focus on decentralization and user sovereignty.
+The LUKSO UP!Store is a decentralized app discovery platform built for the LUKSO ecosystem, designed to make it easy for users to find, install, and manage Universal Profile mini-apps. Think of it as the "App Store" for the LUKSO ecosystem, but with a focus on decentralization and user sovereignty.
 
 ## 🌟 Key Features
 

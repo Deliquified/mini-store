@@ -1,8 +1,7 @@
 "use client";
 
-import StoreExperience from "@/components/StoreExperience";
+import StoreDirectoryExperience from "@/components/StoreDirectoryExperience";
 
 export default function StorePage() {
-  // Shareable full-screen storefront (mobile in-app browser + shared links).
-  return <StoreExperience variant="standalone" />;
+  return <StoreDirectoryExperience />;
 }

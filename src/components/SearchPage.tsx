@@ -1,84 +1,114 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfile } from "../app/components/providers/profileProvider";
-import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
+import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import {
-  Search,
-  Users,
-  Brain,
-  Gamepad2,
-  Landmark,
-  Palette,
-  Music,
-  ShoppingCart,
-  Shield,
-  Bot,
-  Coins,
-  Shirt,
-  BookOpen,
-  Globe,
-  Star,
   BadgePercent,
-  Store,
-  Layers3,
-  X,
-  PlusCircle,
+  Bot,
+  BookOpen,
+  Brain,
+  Coins,
   ExternalLink,
+  Gamepad2,
+  Globe,
+  Landmark,
+  Layers3,
+  Loader2,
+  Music,
+  Palette,
+  PlusCircle,
+  Search,
+  Shield,
+  Shirt,
+  ShoppingCart,
+  Star,
+  Store,
+  Users,
+  X,
 } from "lucide-react";
+
+import { useGrid } from "@/app/components/providers/gridProvider";
+import { Button } from "@/components/ui/button";
+import GridSelectionDialog from "@/components/GridSelectionDialog";
+import { useAppLaunch } from "@/hooks/useAppLaunch";
+import { cn } from "@/lib/utils";
+import { searchApps } from "@/utils/search";
 import {
   categories as appCategories,
-  Category,
-  App,
+  type App,
   apps,
-} from "../data/appCatalog";
-import CategoryDetail from "./CategoryDetail";
-import { searchApps } from "@/utils/search";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { useAppLaunch } from "@/hooks/useAppLaunch";
-import { useGrid } from "@/app/components/providers/gridProvider";
-import GridSelectionDialog from "./GridSelectionDialog";
-import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
+} from "@/data/appCatalog";
 
 interface SearchPageProps {
   onAppClick: (app: App) => void;
 }
 
-// Map category name to a Lucide icon. Color is inherited (currentColor) so the
-// icon picks up the brand tint applied on the tile.
-const categoryIcons: Record<string, React.ReactNode> = {
-  Art: <Palette className="h-5 w-5" />,
-  AI: <Brain className="h-5 w-5" />,
-  Brands: <Store className="h-5 w-5" />,
-  Community: <Users className="h-5 w-5" />,
-  DAOs: <Landmark className="h-5 w-5" />,
-  DeFi: <Coins className="h-5 w-5" />,
-  Exchanges: <BadgePercent className="h-5 w-5" />,
-  Fashion: <Shirt className="h-5 w-5" />,
-  Gaming: <Gamepad2 className="h-5 w-5" />,
-  Infrastructure: <Layers3 className="h-5 w-5" />,
-  Marketplaces: <ShoppingCart className="h-5 w-5" />,
-  "Mini-Apps": <Bot className="h-5 w-5" />,
-  Music: <Music className="h-5 w-5" />,
-  NFTs: <Star className="h-5 w-5" />,
-  Security: <Shield className="h-5 w-5" />,
-  Social: <Globe className="h-5 w-5" />,
-  Staking: <BookOpen className="h-5 w-5" />,
+type CategoryFilter = "all" | string;
+
+const categoryIcons: Record<string, ReactNode> = {
+  Art: <Palette className="h-4 w-4" />,
+  AI: <Brain className="h-4 w-4" />,
+  Brands: <Store className="h-4 w-4" />,
+  Community: <Users className="h-4 w-4" />,
+  DAOs: <Landmark className="h-4 w-4" />,
+  DeFi: <Coins className="h-4 w-4" />,
+  Exchanges: <BadgePercent className="h-4 w-4" />,
+  Fashion: <Shirt className="h-4 w-4" />,
+  Gaming: <Gamepad2 className="h-4 w-4" />,
+  Infrastructure: <Layers3 className="h-4 w-4" />,
+  Marketplaces: <ShoppingCart className="h-4 w-4" />,
+  "Mini-Apps": <Bot className="h-4 w-4" />,
+  Music: <Music className="h-4 w-4" />,
+  NFTs: <Star className="h-4 w-4" />,
+  Security: <Shield className="h-4 w-4" />,
+  Social: <Globe className="h-4 w-4" />,
+  Staking: <BookOpen className="h-4 w-4" />,
 };
 
 export default function SearchPage({ onAppClick }: SearchPageProps) {
-  const { profileData } = useProfile();
   const { sections } = useGrid();
-  const reduceMotion = useReducedMotion();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [searchResults, setSearchResults] = useState<App[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("all");
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  const allApps = useMemo(() => Object.values(apps), []);
+  const allCategories = useMemo(() => Object.values(appCategories), []);
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    allApps.forEach((app) => {
+      app.categories.forEach((category) => {
+        counts.set(category, (counts.get(category) ?? 0) + 1);
+      });
+    });
+
+    return allCategories
+      .map((category) => ({
+        ...category,
+        count: counts.get(category.id) ?? 0,
+      }))
+      .filter((category) => category.count > 0);
+  }, [allApps, allCategories]);
+
+  const activeCategory = useMemo(
+    () =>
+      selectedCategory === "all"
+        ? null
+        : categoryCounts.find((category) => category.id === selectedCategory) ?? null,
+    [categoryCounts, selectedCategory]
+  );
+
+  const visibleApps = useMemo(() => {
+    const searched = deferredSearchTerm.trim()
+      ? searchApps(allApps, deferredSearchTerm)
+      : allApps;
+
+    if (selectedCategory === "all") return searched;
+    return searched.filter((app) => app.categories.includes(selectedCategory));
+  }, [allApps, deferredSearchTerm, selectedCategory]);
 
   const {
-    canInstallToGrid,
     getPrimaryAction,
     isInstalling,
     pendingApp,
@@ -88,74 +118,21 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
     handleGridSelectionCancel,
   } = useAppLaunch();
 
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      setIsSearching(true);
-      const results = searchApps(Object.values(apps), searchTerm);
-      setSearchResults(results);
-    } else {
-      setIsSearching(false);
-      setSearchResults([]);
-    }
-  }, [searchTerm]);
-
-  const allCategories = useMemo(() => Object.values(appCategories), []);
-
-  const handleCategoryClick = (category: Category) => {
-    window.scrollTo(0, 0);
-    setSelectedCategory(category);
-  };
-
-  // ---- Motion variants (gated on prefers-reduced-motion) ----
-  const containerVariants: Variants = {
-    hidden: {},
-    show: {
-      transition: { staggerChildren: reduceMotion ? 0 : 0.04 },
-    },
-  };
-  const itemVariants: Variants = {
-    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduceMotion ? 0.12 : 0.28, ease: [0.22, 1, 0.36, 1] },
-    },
-  };
-
-  if (selectedCategory) {
-    return (
-      <CategoryDetail
-        category={selectedCategory}
-        onBack={() => {
-          window.scrollTo(0, 0);
-          setSelectedCategory(null);
-        }}
-        onAppClick={onAppClick}
-      />
-    );
-  }
+  const resultLabel =
+    visibleApps.length === 1 ? "1 app" : `${visibleApps.length} apps`;
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-background">
-      {/* Ambient brand glow behind the search header (decorative) */}
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-0 top-0 z-0 h-72 bg-glow-ambient ${
-          reduceMotion ? "" : "animate-glow-drift"
-        }`}
-      />
-
-      {/* Search header — frosted glass chrome */}
-      <header className="glass-nav pt-safe sticky top-0 z-20">
-        <div className="mx-auto w-full max-w-[1200px] px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
+    <div className="relative min-h-[100dvh] bg-background text-foreground">
+      <header className="sticky top-[calc(121px+env(safe-area-inset-top))] z-30 border-b border-border bg-background/95 backdrop-blur-xl md:top-[calc(64px+env(safe-area-inset-top))]">
+        <div className="mx-auto w-full max-w-[1100px] px-3 py-3 sm:px-6">
+          <div className="flex items-center gap-2">
             <label htmlFor="store-search" className="sr-only">
               Search apps
             </label>
-            <div className="relative flex-1">
+            <div className="relative min-w-0 flex-1">
               <Search
                 aria-hidden="true"
-                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary"
               />
               <input
                 id="store-search"
@@ -164,143 +141,95 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
                 placeholder="Search apps"
                 autoComplete="off"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="glass h-12 w-full rounded-full border-0 pl-12 pr-12 text-[15px] text-foreground placeholder:text-text-tertiary transition-[width,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-11 w-full rounded-full border border-border-strong bg-card pl-10 pr-11 text-[16px] text-foreground shadow-rest outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-12 sm:text-[15px]"
               />
-              {searchTerm && (
+              {searchTerm ? (
                 <button
                   type="button"
                   aria-label="Clear search"
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-2.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
-              )}
+              ) : null}
             </div>
 
-            <Avatar className="h-11 w-11 shrink-0 ring-1 ring-border-strong">
-              <AvatarImage
-                src={profileData?.profileImages?.[0]?.url || ""}
-                alt={profileData?.name ? `${profileData.name} profile` : "Your profile"}
-              />
-              <AvatarFallback className="bg-muted text-xs font-medium text-text-secondary">
-                UP
-              </AvatarFallback>
-            </Avatar>
           </div>
+
+          <nav
+            aria-label="Filter apps by category"
+            className="-mx-3 mt-3 overflow-x-auto px-3 sm:-mx-6 sm:px-6"
+          >
+            <div className="flex min-w-max gap-2 pb-0.5">
+              <CategoryChip
+                label="All"
+                count={allApps.length}
+                active={selectedCategory === "all"}
+                onClick={() => setSelectedCategory("all")}
+              />
+              {categoryCounts.map((category) => (
+                <CategoryChip
+                  key={category.id}
+                  label={category.displayName}
+                  count={category.count}
+                  icon={categoryIcons[category.name] || <Star className="h-4 w-4" />}
+                  active={selectedCategory === category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                />
+              ))}
+            </div>
+          </nav>
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="pb-safe-content relative z-10 mx-auto w-full max-w-[1200px] flex-1 px-4 py-6 sm:px-6">
-        <AnimatePresence mode="wait" initial={false}>
-          {!isSearching ? (
-            <motion.section
-              key="browse"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-              exit={reduceMotion ? undefined : { opacity: 0 }}
-              aria-label="Browse categories"
+      <main className="mx-auto w-full max-w-[1100px] px-3 pb-safe-content pt-3 sm:px-6 sm:pt-5">
+        <div className="mb-3 flex min-h-7 items-center justify-between gap-3 px-1">
+          <p className="truncate text-[13px] font-medium text-text-secondary">
+            {activeCategory ? `${activeCategory.displayName} - ${resultLabel}` : resultLabel}
+          </p>
+          {selectedCategory !== "all" || searchTerm ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("all");
+              }}
+              className="shrink-0 text-[13px] font-medium text-brand-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <motion.div variants={itemVariants} className="mb-1.5">
-                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-text-tertiary">
-                  Browse
-                </p>
-                <h1 className="font-display text-2xl font-semibold tracking-[-0.01em] text-foreground">
-                  Explore apps
-                </h1>
-              </motion.div>
+              Reset
+            </button>
+          ) : null}
+        </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {allCategories.map((category) => (
-                  <motion.button
-                    key={category.id}
-                    type="button"
-                    variants={itemVariants}
-                    whileHover={reduceMotion ? undefined : { y: -2 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    onClick={() => handleCategoryClick(category)}
-                    className="group flex min-h-[64px] items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 text-left shadow-rest transition-shadow hover:shadow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    <span className="text-sm font-medium text-foreground">
-                      {category.displayName}
-                    </span>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand transition-colors group-hover:bg-brand/15">
-                      {categoryIcons[category.name] || <Star className="h-5 w-5" />}
-                    </span>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.section>
-          ) : (
-            <motion.section
-              key="results"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-              exit={reduceMotion ? undefined : { opacity: 0 }}
-              aria-label="Search results"
-              aria-live="polite"
-            >
-              <motion.h2
-                variants={itemVariants}
-                className="mb-4 text-[13px] font-medium text-text-secondary"
-              >
-                {searchResults.length}{" "}
-                {searchResults.length === 1 ? "result" : "results"}
-                {searchTerm.trim() ? ` for “${searchTerm.trim()}”` : ""}
-              </motion.h2>
-
-              {searchResults.length > 0 ? (
-                <div className="space-y-3">
-                  {searchResults.map((app) => (
-                    <ResultRow
-                      key={app.id ?? app.app.name}
-                      app={app}
-                      variants={itemVariants}
-                      reduceMotion={reduceMotion}
-                      onAppClick={onAppClick}
-                      canInstallToGrid={canInstallToGrid}
-                      getPrimaryAction={getPrimaryAction}
-                      isInstalling={isInstalling}
-                      pendingApp={pendingApp}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <motion.div
-                  variants={itemVariants}
-                  className="content-card mx-auto mt-6 max-w-md text-center hover:translate-y-0 hover:shadow-rest"
-                >
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted text-text-tertiary">
-                    <Search className="h-6 w-6" aria-hidden="true" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-foreground">
-                    No apps found
-                  </h3>
-                  <p className="mt-1 text-[15px] text-text-secondary">
-                    Nothing matched “{searchTerm.trim()}”. Try a different term or
-                    browse by category.
-                  </p>
-                  <Button
-                    variant="ghost-outline"
-                    size="pill"
-                    className="mt-5"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    Clear search
-                  </Button>
-                </motion.div>
-              )}
-            </motion.section>
-          )}
-        </AnimatePresence>
+        {visibleApps.length > 0 ? (
+          <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleApps.map((app, index) => (
+              <DirectoryAppRow
+                key={app.id ?? app.app.name}
+                app={app}
+                index={index}
+                onAppClick={onAppClick}
+                getPrimaryAction={getPrimaryAction}
+                isInstalling={isInstalling}
+                pendingApp={pendingApp}
+              />
+            ))}
+          </ul>
+        ) : (
+          <div className="mx-auto mt-12 max-w-sm rounded-lg border border-border bg-card px-5 py-10 text-center shadow-rest">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-text-tertiary">
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <h2 className="text-base font-semibold text-foreground">No apps found</h2>
+            <p className="mt-1 text-sm leading-6 text-text-secondary">
+              Try another search term or switch category.
+            </p>
+          </div>
+        )}
       </main>
 
-      {/* Grid Selection Dialog (only ever reached when canInstallToGrid) */}
       <GridSelectionDialog
         open={showGridSelection}
         onOpenChange={setShowGridSelection}
@@ -313,111 +242,148 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   );
 }
 
-// ---- Result row: context-aware action via the launch hook ----
-interface ResultRowProps {
+interface CategoryChipProps {
+  label: string;
+  count: number;
+  active: boolean;
+  icon?: ReactNode;
+  onClick: () => void;
+}
+
+function CategoryChip({ label, count, active, icon, onClick }: CategoryChipProps) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-10 min-w-fit items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        active
+          ? "border-brand bg-brand text-primary-foreground shadow-brand"
+          : "border-border-strong bg-card text-foreground shadow-rest hover:bg-muted"
+      )}
+    >
+      {icon ? (
+        <span className="shrink-0" aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <span>{label}</span>
+      <span
+        className={cn(
+          "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
+          active ? "bg-white/20 text-primary-foreground" : "bg-muted text-text-secondary"
+        )}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+interface DirectoryAppRowProps {
   app: App;
-  variants: Variants;
-  reduceMotion: boolean | null;
+  index: number;
   onAppClick: (app: App) => void;
-  canInstallToGrid: boolean;
   getPrimaryAction: ReturnType<typeof useAppLaunch>["getPrimaryAction"];
   isInstalling: boolean;
   pendingApp: App | null;
 }
 
-function ResultRow({
+function DirectoryAppRow({
   app,
-  variants,
-  reduceMotion,
+  index,
   onAppClick,
-  canInstallToGrid,
   getPrimaryAction,
   isInstalling,
   pendingApp,
-}: ResultRowProps) {
+}: DirectoryAppRowProps) {
   const action = getPrimaryAction(app);
-  // Show the spinner only on the row whose install is actually pending.
   const isBusy =
-    canInstallToGrid &&
     isInstalling &&
     (pendingApp ? (pendingApp.id ?? pendingApp.app.name) === (app.id ?? app.app.name) : true);
+  const developer = app.developer || app.publisherProfile;
 
   return (
-    <motion.div
-      variants={variants}
-      whileHover={reduceMotion ? undefined : { y: -2 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      role="button"
-      tabIndex={0}
-      onClick={() => onAppClick(app)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onAppClick(app);
-        }
-      }}
-      className="flex cursor-pointer items-center gap-4 rounded-lg border border-border bg-card p-4 shadow-rest transition-shadow hover:shadow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-    >
-      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted">
-        {app.icon ? (
-          <Image
-            src={app.icon}
-            alt={`${app.app.name} icon`}
-            fill
-            sizes="56px"
-            className="object-cover"
-          />
-        ) : null}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <h3 className="truncate text-[15px] font-medium text-foreground">
-          {app.app.name}
-        </h3>
-        {app.developer ? (
-          <p className="truncate text-[13px] text-text-secondary">
-            {app.developer}
-          </p>
-        ) : null}
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {app.categories.slice(0, 2).map((category, idx) => (
-            <span key={idx} className="chip">
-              {category}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <Button
-        variant={action.kind === "install" ? "brand" : "ghost-outline"}
-        size="pill"
-        className="shrink-0"
-        disabled={isBusy}
-        aria-label={`${action.label}: ${app.app.name}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          action.run(app);
-        }}
-      >
-        {isBusy ? (
-          <>
-            <span
-              className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-              aria-hidden="true"
+    <li className="rounded-lg border border-border bg-card shadow-rest transition hover:shadow-hover">
+      <div className="grid min-h-[76px] grid-cols-[52px_minmax(0,1fr)_40px] items-center gap-3 p-2.5 sm:grid-cols-[52px_minmax(0,1fr)_auto]">
+        <button
+          type="button"
+          onClick={() => onAppClick(app)}
+          className="relative flex h-[52px] w-[52px] overflow-hidden rounded-2xl border border-border bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label={`View ${app.app.name}`}
+        >
+          {app.icon ? (
+            <Image
+              src={app.icon}
+              alt={`${app.app.name} icon`}
+              fill
+              sizes="52px"
+              priority={index < 8}
+              className="object-cover"
             />
-            <span>Adding…</span>
-          </>
-        ) : (
-          <>
-            {action.kind === "install" ? (
-              <PlusCircle className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <ExternalLink className="h-4 w-4" aria-hidden="true" />
-            )}
-            <span>{action.label}</span>
-          </>
-        )}
-      </Button>
-    </motion.div>
+          ) : (
+            <span className="flex h-full w-full items-center justify-center bg-brand-gradient-soft text-base font-semibold text-white">
+              {app.app.name.charAt(0)}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onAppClick(app)}
+          className="min-w-0 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label={`View ${app.app.name}`}
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[15px] font-semibold leading-snug text-foreground">
+              {app.app.name}
+            </span>
+            <span className="block truncate text-[13px] leading-5 text-text-secondary">
+              {developer}
+            </span>
+            <span className="mt-1 flex min-h-5 flex-wrap gap-1">
+              {app.categories.slice(0, 2).map((category) => (
+                <span
+                  key={category}
+                  className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-text-secondary"
+                >
+                  {category}
+                </span>
+              ))}
+            </span>
+          </span>
+        </button>
+
+        <Button
+          type="button"
+          variant={action.kind === "install" ? "brand" : "ghost-outline"}
+          size="pill"
+          className="h-10 min-h-10 w-10 shrink-0 px-0 text-[13px] sm:w-auto sm:px-3"
+          disabled={isBusy}
+          aria-label={`${action.label}: ${app.app.name}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            action.run(app);
+          }}
+        >
+          {isBusy ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              <span className="hidden sm:inline">Adding</span>
+            </>
+          ) : (
+            <>
+              {action.kind === "install" ? (
+                <PlusCircle className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              )}
+              <span className="hidden sm:inline">{action.label}</span>
+            </>
+          )}
+        </Button>
+      </div>
+    </li>
   );
 }

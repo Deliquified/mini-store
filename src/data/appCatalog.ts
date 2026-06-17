@@ -95,8 +95,64 @@ function toApp(slug: string, entry: AppManifestEntry): App {
 }
 
 // All apps in the store (insertion order preserved from apps.json)
-export const apps: Record<string, App> = Object.fromEntries(
+const manifestApps: Record<string, App> = Object.fromEntries(
   Object.entries(manifest).map(([slug, entry]) => [slug, toApp(slug, entry)])
+);
+
+const uniqueValues = (values: Array<string | undefined>) =>
+  Array.from(new Set(values.filter(Boolean) as string[]));
+
+const normalizeKey = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/https?:\/\//, "")
+    .replace(/\/$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const getProductFamily = (app: App) => {
+  const [family] = app.app.name.split(":");
+  return family.trim() || app.app.name;
+};
+
+const getDeduplicationKey = (app: App) => {
+  const owner = app.publisherProfile || app.developer || "";
+  return `${normalizeKey(owner)}:${normalizeKey(getProductFamily(app))}`;
+};
+
+const mergeDuplicateApps = (canonical: App, duplicate: App): App => {
+  return {
+    ...canonical,
+    categories: uniqueValues([...canonical.categories, ...duplicate.categories]),
+    tags: uniqueValues([
+      ...(canonical.tags ?? []),
+      ...(duplicate.tags ?? []),
+      duplicate.app.name,
+      getProductFamily(duplicate),
+    ]),
+    featured: canonical.featured || duplicate.featured,
+  };
+};
+
+// Public app list with product-family duplicates collapsed. This keeps variants
+// like several "Stakingverse: ..." widgets from showing as separate store apps.
+export const apps: Record<string, App> = Object.fromEntries(
+  Object.entries(manifestApps).reduce<Array<[string, App]>>((deduped, [slug, app]) => {
+    const key = getDeduplicationKey(app);
+    const existingIndex = deduped.findIndex(([, existingApp]) => {
+      return getDeduplicationKey(existingApp) === key;
+    });
+
+    if (existingIndex === -1) {
+      deduped.push([slug, app]);
+      return deduped;
+    }
+
+    const [existingSlug, existingApp] = deduped[existingIndex];
+    deduped[existingIndex] = [existingSlug, mergeDuplicateApps(existingApp, app)];
+    return deduped;
+  }, [])
 );
 
 // Categories definition (taxonomy — edit here to add a new category)
@@ -121,12 +177,18 @@ export const categories: Record<string, Category> = {
 
 // Featured apps (hero carousel) — built from any entry with a `featuredTitle`
 export const featuredApps: FeaturedApp[] = Object.entries(manifest)
-  .filter(([, entry]) => Boolean(entry.featuredTitle))
-  .map(([slug, entry]) => ({
-    ...apps[slug],
-    title: entry.featuredTitle as string,
-    banner: apps[slug].banner || "",
-  }));
+  .flatMap(([slug, entry]) => {
+    const app = apps[slug];
+    if (!entry.featuredTitle || !app) return [];
+
+    return [
+      {
+        ...app,
+        title: entry.featuredTitle,
+        banner: app.banner || "",
+      },
+    ];
+  });
 
 // Sample categories for display
 export const sampleCategories = ["Social", "AI", "Gaming", "DeFi", "NFTs"];

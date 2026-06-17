@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { Compass, Loader2, Search } from "lucide-react";
+import { Compass, Loader2, Store } from "lucide-react";
 
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { useProfile } from "@/app/components/providers/profileProvider";
@@ -10,12 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ExplorePage from "@/components/ExplorePage";
-import SearchPage from "@/components/SearchPage";
 import AppDetailPage from "@/components/AppDetailPage";
 import { App } from "@/data/appCatalog";
 import { cn } from "@/lib/utils";
 
-type Tab = "explore" | "search";
+type Tab = "explore";
 
 export interface StoreExperienceProps {
   /**
@@ -28,8 +29,9 @@ export interface StoreExperienceProps {
 
 const TABS: { id: Tab; label: string; icon: typeof Compass }[] = [
   { id: "explore", label: "Explore", icon: Compass },
-  { id: "search", label: "Search", icon: Search },
 ];
+
+const STORE_LINK = { href: "/store", label: "Store" };
 
 export default function StoreExperience({ variant = "auto" }: StoreExperienceProps) {
   const { walletConnected, isLoading } = useUpProvider();
@@ -72,7 +74,7 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
         <div className="flex flex-col items-center gap-4">
           <Wordmark size="lg" />
           <Loader2 className="h-5 w-5 animate-spin text-brand" aria-hidden="true" />
-          <span className="sr-only">Loading the LUKSO App Store</span>
+          <span className="sr-only">Loading the LUKSO UP!Store</span>
         </div>
       </div>
     );
@@ -83,8 +85,6 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
       return <AppDetailPage app={selectedApp} onBack={handleBackFromApp} />;
     }
     switch (activeTab) {
-      case "search":
-        return <SearchPage onAppClick={handleAppClick} />;
       case "explore":
       default:
         return <ExplorePage onAppClick={handleAppClick} />;
@@ -140,6 +140,12 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
                   </button>
                 );
               })}
+              <Link
+                href={STORE_LINK.href}
+                className="relative flex h-9 min-h-[44px] items-center px-3 text-sm font-medium text-text-secondary transition-colors hover:text-foreground"
+              >
+                {STORE_LINK.label}
+              </Link>
             </nav>
 
             <ThemeToggle />
@@ -152,7 +158,15 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
                     src={profileData?.profileImages?.[0]?.url || ""}
                     alt={profileData?.name || "Universal Profile"}
                   />
-                  <AvatarFallback className="text-[10px]">UP</AvatarFallback>
+                  <AvatarFallback className="bg-transparent p-0">
+                  <Image
+                    src="/up-logo.png"
+                    alt="UP!"
+                    width={28}
+                    height={28}
+                    className="h-full w-full object-cover"
+                  />
+                </AvatarFallback>
                 </Avatar>
                 <span className="hidden max-w-[120px] truncate text-sm font-medium text-foreground sm:inline">
                   {profileData?.name || "Profile"}
@@ -193,6 +207,13 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
                 </button>
               );
             })}
+            <Link
+              href={STORE_LINK.href}
+              className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
+            >
+              <Store className="h-4 w-4" aria-hidden="true" />
+              {STORE_LINK.label}
+            </Link>
           </div>
         </div>
       </header>
