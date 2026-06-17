@@ -420,46 +420,6 @@
       "Assets"
     ]
   },
-  "sleek": {
-    "name": "SLEEK",
-    "url": "https://universaleverything.io/0x8cef7ca98bddcab3ead366b5037817e7d11d99d4",
-    "developer": "SLEEK",
-    "publisher": "0x8cef7ca98bddcab3ead366b5037817e7d11d99d4",
-    "categories": [
-      "Brands",
-      "Fashion"
-    ],
-    "gridSize": [
-      1,
-      2
-    ],
-    "screenshots": 1,
-    "tags": [
-      "SLEEK",
-      "Fashion",
-      "Universal Everything"
-    ]
-  },
-  "mansory": {
-    "name": "Mansory",
-    "url": "https://universaleverything.io/0x6bdac8ca23479b20e250bea4ee8422a8fb23a713",
-    "developer": "Mansory",
-    "publisher": "0x6bdac8ca23479b20e250bea4ee8422a8fb23a713",
-    "categories": [
-      "Brands",
-      "Fashion"
-    ],
-    "gridSize": [
-      1,
-      2
-    ],
-    "screenshots": 1,
-    "tags": [
-      "Mansory",
-      "Luxury",
-      "Universal Everything"
-    ]
-  },
   "team-finance-lukso-tools": {
     "name": "Team Finance: LUKSO Token Tools",
     "url": "https://app.team.finance/token-creation?ref=blog.team.finance",
