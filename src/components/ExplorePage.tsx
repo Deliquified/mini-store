@@ -9,10 +9,12 @@ import TopChartsSlider from "./TopChartsSlider";
 import {
   getAppsByCategory,
   apps,
+  featuredApps,
   shuffle,
   App,
 } from "@/data/appCatalog";
 import { useHydrated } from "@/hooks/useHydrated";
+import { useTrending } from "@/hooks/useTrending";
 import { cn } from "@/lib/utils";
 
 interface ExplorePageProps {
@@ -105,25 +107,35 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
     return {
       defi: getAppsByCategory("DeFi"),
       nfts: getAppsByCategory("NFTs"),
+      featured: featuredApps,
       recommendedPool,
       all: Object.values(apps),
     };
   }, []);
 
+  // Global open counts — drives the popularity ranking in Trending. Loads
+  // post-mount; {} until then so SSR/first render stays stable.
+  const trendingCounts = useTrending();
+
   // After mount we re-randomize the order once. A fresh mount happens on every
   // full page load, so the store reshuffles on every reload (see useHydrated).
   const hydrated = useHydrated();
-  const { defiApps, recommendedApps, nftApps, allApps } = useMemo(() => {
-    const order = <T,>(list: T[]) => (hydrated ? shuffle(list) : list);
+  const { defiApps, featuredSlides, recommendedApps, nftApps, allApps } = useMemo(
+    () => {
+      const order = <T,>(list: T[]) => (hydrated ? shuffle(list) : list);
 
-    return {
-      defiApps: order(base.defi),
-      nftApps: order(base.nfts),
-      // Shuffle the pool first, then cap at 6 so which six surface also varies.
-      recommendedApps: order(base.recommendedPool).slice(0, 6),
-      allApps: order(base.all),
-    };
-  }, [hydrated, base]);
+      return {
+        defiApps: order(base.defi),
+        nftApps: order(base.nfts),
+        // Rotate a handful of featured apps each reload without changing SSR output.
+        featuredSlides: order(base.featured).slice(0, 6),
+        // Shuffle the pool first, then cap at 6 so which six surface also varies.
+        recommendedApps: order(base.recommendedPool).slice(0, 6),
+        allApps: order(base.all),
+      };
+    },
+    [hydrated, base]
+  );
 
   return (
     <div className="flex flex-col gap-12 pb-4 md:gap-16">
@@ -148,9 +160,9 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
           so DiscoverSection contributes only the eyebrow + intro. */}
       <DiscoverSection
         eyebrow="Featured"
-        intro="A standout app, front and center."
+        intro="A rotating mix of standout apps, front and center."
       >
-        <FeaturedBanner onAppClick={onAppClick} />
+        <FeaturedBanner apps={featuredSlides} onAppClick={onAppClick} />
       </DiscoverSection>
 
       {/* DeFi rail — DiscoverSection owns the heading; AppSlider title is
@@ -170,7 +182,11 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
         eyebrow="Trending"
         intro="What the LUKSO community is opening most right now."
       >
-        <TopChartsSlider apps={allApps} onAppClick={onAppClick} />
+        <TopChartsSlider
+          apps={allApps}
+          onAppClick={onAppClick}
+          trendingCounts={trendingCounts}
+        />
       </DiscoverSection>
 
       {/* NFTs rail */}

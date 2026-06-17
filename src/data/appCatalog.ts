@@ -47,6 +47,7 @@ export interface App {
   developer?: string;
   tags?: string[];
   featured?: boolean;
+  featuredTitle?: string;
 }
 
 export interface FeaturedApp extends App {
@@ -91,6 +92,7 @@ function toApp(slug: string, entry: AppManifestEntry): App {
     developer: entry.developer,
     tags: entry.tags,
     featured: entry.featured ?? false,
+    featuredTitle: entry.featuredTitle,
   };
 }
 
@@ -132,6 +134,7 @@ const mergeDuplicateApps = (canonical: App, duplicate: App): App => {
       getProductFamily(duplicate),
     ]),
     featured: canonical.featured || duplicate.featured,
+    featuredTitle: canonical.featuredTitle ?? duplicate.featuredTitle,
   };
 };
 
@@ -175,20 +178,15 @@ export const categories: Record<string, Category> = {
   Staking: { id: "Staking", name: "Staking", displayName: "Staking" },
 };
 
-// Featured apps (hero carousel) — built from any entry with a `featuredTitle`
-export const featuredApps: FeaturedApp[] = Object.entries(manifest)
-  .flatMap(([slug, entry]) => {
-    const app = apps[slug];
-    if (!entry.featuredTitle || !app) return [];
-
-    return [
-      {
-        ...app,
-        title: entry.featuredTitle,
-        banner: app.banner || "",
-      },
-    ];
-  });
+// Featured apps (hero carousel) — any featured app can rotate into the hero.
+// `featuredTitle` is an optional editorial override; otherwise use app name.
+export const featuredApps: FeaturedApp[] = Object.values(apps)
+  .filter((app) => app.featured || app.featuredTitle)
+  .map((app) => ({
+    ...app,
+    title: app.featuredTitle || app.app.name,
+    banner: app.banner || "",
+  }));
 
 // Sample categories for display
 export const sampleCategories = ["Social", "AI", "Gaming", "DeFi", "NFTs"];
@@ -221,3 +219,15 @@ export const shuffle = <T>(items: readonly T[]): T[] => {
   }
   return result;
 };
+
+// Order apps by global open count (most-opened first). The sort is stable, so
+// apps with equal counts — notably everything at 0 — keep their incoming order
+// (e.g. the per-reload shuffle), which is what powers the popularity-ranked
+// Trending section without flattening discovery for un-opened apps.
+export const sortByOpenCount = <T extends { id?: string }>(
+  items: readonly T[],
+  counts: Record<string, number>
+): T[] =>
+  [...items].sort(
+    (a, b) => (counts[b.id ?? ""] ?? 0) - (counts[a.id ?? ""] ?? 0)
+  );

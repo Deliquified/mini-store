@@ -8,11 +8,18 @@ import {
   App,
   categories as appCategories,
   getPrimaryCategory,
+  sortByOpenCount,
 } from "@/data/appCatalog";
 
 interface TopChartsSliderProps {
   apps: App[];
   onAppClick: (app: App) => void;
+  /**
+   * Global open counts ({ [appId]: count }). When provided, rows rank
+   * most-opened first within the active category. Empty/undefined falls back to
+   * the incoming order, so SSR/first render stays stable (see useTrending).
+   */
+  trendingCounts?: Record<string, number>;
 }
 
 type ChartFilter = string;
@@ -28,7 +35,11 @@ const PRIORITY_CATEGORIES = [
   "Exchanges",
 ];
 
-export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderProps) {
+export default function TopChartsSlider({
+  apps,
+  onAppClick,
+  trendingCounts,
+}: TopChartsSliderProps) {
   const [activeFilter, setActiveFilter] = useState<ChartFilter>("DeFi");
   const reduceMotion = useReducedMotion();
   const filterOptions = useMemo(() => {
@@ -66,7 +77,11 @@ export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderPro
     return null;
   }
 
-  const filteredApps = apps.filter((app) => app.categories.includes(activeFilter));
+  // Rank most-opened first within the active category; ties keep incoming order.
+  const filteredApps = sortByOpenCount(
+    apps.filter((app) => app.categories.includes(activeFilter)),
+    trendingCounts ?? {}
+  );
   const activeLabel =
     filterOptions.find((filter) => filter.id === activeFilter)?.label ?? activeFilter;
 

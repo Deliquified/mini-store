@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useInstallApp } from "./useInstallApp";
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { App } from "@/data/appCatalog";
+import { trackOpen } from "@/lib/trackOpen";
 
 export type PrimaryActionKind = "open" | "install";
 
@@ -46,6 +47,9 @@ export function useAppLaunch(): UseAppLaunch {
   const openApp = useCallback((app: App) => {
     const url = app?.app?.url;
     if (!url) return;
+    // Record the open before launching — every open path funnels through here,
+    // and the store tab stays alive (new tab), so the signal reliably lands.
+    trackOpen(app?.id);
     // "_blank" so launching never replaces the store/grid iframe content.
     window.open(url, "_blank", "noopener,noreferrer");
   }, []);

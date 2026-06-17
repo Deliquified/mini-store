@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, PlusCircle, Sparkles } from "lucide-react";
@@ -23,10 +23,14 @@ import { cn } from "@/lib/utils";
 import GridSelectionDialog from "./GridSelectionDialog";
 
 interface FeaturedBannerProps {
+  apps?: FeaturedApp[];
   onAppClick: (app: FeaturedApp) => void;
 }
 
-export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
+export default function FeaturedBanner({
+  apps: slides = featuredApps,
+  onAppClick,
+}: FeaturedBannerProps) {
   const reduceMotion = useReducedMotion();
   const { sections } = useGrid();
   const {
@@ -43,19 +47,48 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
 
   const [api, setApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [slideCount, setSlideCount] = useState(featuredApps.length);
+  const [slideCount, setSlideCount] = useState(slides.length);
+  const slideSignature = useMemo(
+    () => slides.map((app) => app.id ?? app.app.name).join("|"),
+    [slides]
+  );
+
+  useEffect(() => {
+    setSlideCount(slides.length);
+    setSelectedIndex(0);
+  }, [slides.length, slideSignature]);
 
   useEffect(() => {
     if (!api) return;
-    const onSelect = () => setSelectedIndex(api.selectedScrollSnap());
-    setSlideCount(api.scrollSnapList().length);
-    setSelectedIndex(api.selectedScrollSnap());
-    api.on("select", onSelect);
-    api.on("reInit", onSelect);
-    return () => {
-      api.off("select", onSelect);
+
+    const syncCarouselState = () => {
+      setSlideCount(api.scrollSnapList().length);
+      setSelectedIndex(api.selectedScrollSnap());
     };
-  }, [api]);
+
+    api.reInit();
+    api.scrollTo(0);
+    syncCarouselState();
+    api.on("select", syncCarouselState);
+    api.on("reInit", syncCarouselState);
+
+    return () => {
+      api.off("select", syncCarouselState);
+      api.off("reInit", syncCarouselState);
+    };
+  }, [api, slideSignature]);
+
+  useEffect(() => {
+    if (!api || reduceMotion || slideCount < 2) return;
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        api.scrollNext();
+      }
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [api, reduceMotion, slideCount]);
 
   const handleDotClick = useCallback(
     (index: number) => api?.scrollTo(index),
@@ -64,16 +97,20 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
 
   return (
     <section className="mb-10" aria-label="Featured apps">
-      <Carousel className="w-full" opts={{ align: "start", loop: true }} setApi={setApi}>
+      <Carousel
+        className="w-full touch-pan-y"
+        opts={{ align: "start", loop: true }}
+        setApi={setApi}
+      >
         <CarouselContent>
-          {featuredApps.map((app, index) => {
+          {slides.map((app, index) => {
             const primary = getPrimaryAction(app);
             const category = getPrimaryCategory(app);
             const installingThis =
               isInstalling && pendingApp?.id === app.id;
 
             return (
-              <CarouselItem key={app.id ?? index}>
+              <CarouselItem key={app.id ?? index} className="basis-[88%] sm:basis-full">
                 <motion.div
                   initial={reduceMotion ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
