@@ -440,5 +440,45 @@
       "Permissions",
       "Universal Profiles"
     ]
+  },
+  "universal-grave": {
+    "name": "Universal Grave",
+    "url": "https://universalgrave.com/lukso",
+    "developer": "GRAVE",
+    "publisher": "0xec1c59E78De6f840A66b6EE8E4066700Be863529",
+    "categories": [
+      "Security",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "Grave",
+      "Digital Assets",
+      "Spam"
+    ]
+  },
+  "up-assistants": {
+    "name": "UP Assistants",
+    "url": "https://upassistants.com/",
+    "developer": "UP Assistants",
+    "publisher": "0xec1c59E78De6f840A66b6EE8E4066700Be863529",
+    "categories": [
+      "AI",
+      "Community"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "Assistants",
+      "Catalog",
+      "AI"
+    ]
   }
 }
