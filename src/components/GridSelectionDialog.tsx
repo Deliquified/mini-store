@@ -132,7 +132,7 @@ function DialogHead({
           "mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl",
           tone === "error"
             ? "bg-destructive/10 text-destructive"
-            : "bg-brand-gradient text-white shadow-brand"
+            : "bg-brand-gradient-cta text-white shadow-cta ring-1 ring-inset ring-white/15"
         )}
       >
         {tone === "error" ? (

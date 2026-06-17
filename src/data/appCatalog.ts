@@ -210,3 +210,14 @@ export const getFeaturedApps = (): FeaturedApp[] => {
 export const getTopCategories = (): Category[] => {
   return sampleCategories.map((id) => categories[id]).filter(Boolean);
 };
+
+// Fisher–Yates shuffle — returns a new array, leaves the input untouched.
+// Used to randomize the store rails on each reload (see useHydrated()).
+export const shuffle = <T>(items: readonly T[]): T[] => {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};

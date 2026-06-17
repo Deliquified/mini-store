@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Compass, Loader2, Store } from "lucide-react";
+import { Compass, Store } from "lucide-react";
 
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { useProfile } from "@/app/components/providers/profileProvider";
@@ -13,6 +14,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ExplorePage from "@/components/ExplorePage";
 import AppDetailPage from "@/components/AppDetailPage";
+import LoadingSplash from "@/components/LoadingSplash";
 import { App } from "@/data/appCatalog";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,7 @@ const TABS: { id: Tab; label: string; icon: typeof Compass }[] = [
 const STORE_LINK = { href: "/store", label: "Store" };
 
 export default function StoreExperience({ variant = "auto" }: StoreExperienceProps) {
+  const router = useRouter();
   const { walletConnected, isLoading } = useUpProvider();
   const { profileData } = useProfile();
   const prefersReducedMotion = useReducedMotion();
@@ -53,6 +56,10 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
 
   const handleAppClick = (app: App) => {
     window.scrollTo(0, 0);
+    if (app.id) {
+      router.push(`/store/${encodeURIComponent(app.id)}`);
+      return;
+    }
     setSelectedApp(app);
   };
 
@@ -67,19 +74,6 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
     setSelectedApp(null);
   };
 
-  // ---- Loading state: full-bleed, centered Wordmark + spinner (no squirrel) ----
-  if (isLoading) {
-    return (
-      <div className="min-h-[100dvh] w-full grid place-items-center bg-background bg-glow-ambient">
-        <div className="flex flex-col items-center gap-4">
-          <Wordmark size="lg" />
-          <Loader2 className="h-5 w-5 animate-spin text-brand" aria-hidden="true" />
-          <span className="sr-only">Loading the LUKSO UP!Store</span>
-        </div>
-      </div>
-    );
-  }
-
   const renderContent = () => {
     if (selectedApp) {
       return <AppDetailPage app={selectedApp} onBack={handleBackFromApp} />;
@@ -93,6 +87,8 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
 
   return (
     <div className="relative flex min-h-[100dvh] w-full flex-col bg-background">
+      <LoadingSplash active={isLoading} />
+
       {/* Ambient brand glow anchored top-center */}
       <div
         aria-hidden="true"

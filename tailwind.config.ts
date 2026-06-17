@@ -72,12 +72,16 @@ const config: Config = {
       backgroundImage: {
         "brand-gradient": "var(--brand-gradient)",
         "brand-gradient-soft": "var(--brand-gradient-soft)",
+        "brand-gradient-cta": "var(--brand-gradient-cta)",
         "glow-ambient": "var(--glow-ambient)",
+        "hero-sheen": "var(--hero-sheen)",
       },
       boxShadow: {
         rest: "var(--shadow-rest)",
         hover: "var(--shadow-hover)",
         brand: "var(--shadow-brand)",
+        cta: "var(--shadow-cta)",
+        "cta-hover": "var(--shadow-cta-hover)",
         glass: "var(--glass-shadow)",
       },
       backdropBlur: {

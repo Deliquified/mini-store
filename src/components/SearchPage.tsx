@@ -33,10 +33,12 @@ import GridSelectionDialog from "@/components/GridSelectionDialog";
 import { useAppLaunch } from "@/hooks/useAppLaunch";
 import { cn } from "@/lib/utils";
 import { searchApps } from "@/utils/search";
+import { useHydrated } from "@/hooks/useHydrated";
 import {
   categories as appCategories,
   type App,
   apps,
+  shuffle,
 } from "@/data/appCatalog";
 
 interface SearchPageProps {
@@ -75,6 +77,15 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   const allApps = useMemo(() => Object.values(apps), []);
   const allCategories = useMemo(() => Object.values(appCategories), []);
 
+  // Randomize the browse order once per page load (mount). Gated on hydration
+  // so SSR markup matches the first client render. While searching we keep the
+  // relevance order from searchApps() instead of reshuffling.
+  const hydrated = useHydrated();
+  const browseApps = useMemo(
+    () => (hydrated ? shuffle(allApps) : allApps),
+    [hydrated, allApps]
+  );
+
   const categoryCounts = useMemo(() => {
     const counts = new Map<string, number>();
     allApps.forEach((app) => {
@@ -102,11 +113,11 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   const visibleApps = useMemo(() => {
     const searched = deferredSearchTerm.trim()
       ? searchApps(allApps, deferredSearchTerm)
-      : allApps;
+      : browseApps;
 
     if (selectedCategory === "all") return searched;
     return searched.filter((app) => app.categories.includes(selectedCategory));
-  }, [allApps, deferredSearchTerm, selectedCategory]);
+  }, [allApps, browseApps, deferredSearchTerm, selectedCategory]);
 
   const {
     getPrimaryAction,
@@ -160,9 +171,9 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
 
           <nav
             aria-label="Filter apps by category"
-            className="-mx-3 mt-3 overflow-x-auto px-3 sm:-mx-6 sm:px-6"
+            className="-mx-3 mt-3 overflow-x-auto px-3 py-1 sm:-mx-6 sm:px-6"
           >
-            <div className="flex min-w-max gap-2 pb-0.5">
+            <div className="flex min-w-max gap-2">
               <CategoryChip
                 label="All"
                 count={allApps.length}
@@ -257,10 +268,10 @@ function CategoryChip({ label, count, active, icon, onClick }: CategoryChipProps
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-10 min-w-fit items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "inline-flex h-10 min-w-fit items-center gap-1.5 rounded-full border px-3 text-sm font-medium shadow-glass backdrop-blur-xl transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         active
-          ? "border-brand bg-brand text-primary-foreground shadow-brand"
-          : "border-border-strong bg-card text-foreground shadow-rest hover:bg-muted"
+          ? "border-white/80 bg-white/50 text-brand-text ring-1 ring-inset ring-white/55 hover:bg-white/60 dark:border-white/15 dark:bg-white/15 dark:text-white dark:hover:bg-white/20"
+          : "border-white/65 bg-white/30 text-foreground ring-1 ring-inset ring-white/35 hover:bg-white/45 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
       )}
     >
       {icon ? (
@@ -272,7 +283,9 @@ function CategoryChip({ label, count, active, icon, onClick }: CategoryChipProps
       <span
         className={cn(
           "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
-          active ? "bg-white/20 text-primary-foreground" : "bg-muted text-text-secondary"
+          active
+            ? "bg-brand/10 text-brand-text dark:bg-white/15 dark:text-white"
+            : "bg-white/35 text-text-secondary dark:bg-white/10 dark:text-white/70"
         )}
       >
         {count}

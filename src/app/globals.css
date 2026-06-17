@@ -19,19 +19,19 @@
 
     /* ---- Canvas & surfaces ---- */
     --background: 24 33% 98%; /* #FBFAFA warm off-white canvas */
-    --canvas-cream: 26 47% 95%; /* #F7F2EE hero band / section divider */
+    --canvas-cream: 233 40% 96%; /* #F2F3FA cool lavender hero band / section divider */
     --card: 0 0% 100%; /* #FFFFFF solid content surface */
     --card-foreground: 222 26% 8%; /* #0F1115 */
     --popover: 0 0% 100%;
     --popover-foreground: 222 26% 8%;
 
-    /* ---- Brand (single dominant accent) ---- */
-    --brand: 335 100% 50%; /* #FE005B hot pink — fills only (buttons, accent bars) */
-    --brand-hover: 335 100% 42%; /* #D60050 */
-    --brand-text: 335 100% 42%; /* #D60050 — AA-safe pink for small text/labels/links (>= 4.5:1 on white & cream) */
-    --brand-2: 14 100% 80%; /* #FFB199 peach */
-    --salmon: 352 100% 74%; /* #FF7A8A */
-    --cream: 19 100% 92%; /* #FFE4D6 */
+    /* ---- Brand (single dominant accent) — UP! periwinkle ---- */
+    --brand: 238 49% 57%; /* #5B5FC7 indigo — fills only (buttons, accent bars) */
+    --brand-hover: 237 41% 49%; /* #4A4FB0 */
+    --brand-text: 237 41% 49%; /* #4A4FB0 — AA-safe indigo for small text/labels/links (>= 6:1 on white & lavender) */
+    --brand-2: 234 49% 85%; /* #C7CBEC lavender */
+    --salmon: 232 34% 68%; /* #939ACA UP! periwinkle */
+    --cream: 233 52% 94%; /* #E6E8F7 soft lavender */
 
     /* ---- Text ---- */
     --foreground: 222 26% 8%; /* #0F1115 primary */
@@ -39,7 +39,7 @@
     --text-tertiary: 216 5% 63%; /* #9AA0A6 */
 
     /* ---- shadcn semantic aliases ---- */
-    --primary: 335 100% 50%;
+    --primary: 238 49% 57%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 96%;
     --secondary-foreground: 222 26% 8%;
@@ -52,7 +52,7 @@
     --border: 240 4% 93%; /* #ECECEE */
     --border-strong: 228 6% 87%; /* #DDDEE1 */
     --input: 228 6% 87%;
-    --ring: 335 100% 50%;
+    --ring: 238 49% 57%;
 
     /* ---- Status ---- */
     --success: 142 76% 36%;
@@ -60,20 +60,31 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ---- Gradients / glow ---- */
-    --brand-gradient: linear-gradient(135deg, #fe005b 0%, #ff7a8a 45%, #ffb199 75%, #ffe4d6 100%);
-    --brand-gradient-soft: linear-gradient(135deg, #fe005b 0%, #ff7a8a 60%, #ffb199 100%);
+    /* ---- Gradients / glow — UP! periwinkle ---- */
+    /* Decorative only (text-clip headings, underlines) — runs into light lavender. */
+    --brand-gradient: linear-gradient(135deg, #3f46a6 0%, #5b5fc7 52%, #7f86d8 100%);
+    /* White-text-safe vivid fill (avatar fallbacks, accent bars). */
+    --brand-gradient-soft: linear-gradient(135deg, #4a4fb0 0%, #5b5fc7 100%);
+    /* Primary CTA — vertical sheen, every stop AA with white text (>= 4.6:1). */
+    --brand-gradient-cta: linear-gradient(180deg, #6166cc 0%, #5b5fc7 48%, #4e52bc 100%);
+    /* Soft directional accent wash behind elevated hero surfaces. */
+    --hero-sheen: radial-gradient(
+      120% 140% at 0% 0%,
+      rgba(91, 95, 199, 0.1) 0%,
+      rgba(147, 154, 202, 0.045) 42%,
+      transparent 72%
+    );
     --glow-ambient: radial-gradient(
       60% 60% at 50% 0%,
-      rgba(254, 0, 91, 0.12) 0%,
-      rgba(255, 177, 153, 0.06) 40%,
+      rgba(91, 95, 199, 0.12) 0%,
+      rgba(147, 154, 202, 0.06) 40%,
       transparent 70%
     );
 
     /* ---- Glass ---- */
     --glass-bg: 255 255 255 / 0.68;
     --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-tint: rgba(255, 228, 214, 0.5);
+    --glass-tint: rgba(199, 203, 236, 0.5);
     --glass-blur: 24px;
     --glass-shadow: 0 1px 2px rgba(16, 17, 21, 0.04), 0 8px 24px rgba(16, 17, 21, 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.7);
@@ -81,7 +92,12 @@
     /* ---- Elevation ladder ---- */
     --shadow-rest: 0 1px 2px rgba(16, 17, 21, 0.04), 0 8px 24px rgba(16, 17, 21, 0.06);
     --shadow-hover: 0 12px 32px rgba(16, 17, 21, 0.1);
-    --shadow-brand: 0 8px 30px rgba(254, 0, 91, 0.25);
+    --shadow-brand: 0 8px 30px rgba(91, 95, 199, 0.25);
+    /* Premium CTA: inset top highlight + colored ambient drop. */
+    --shadow-cta: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(46, 49, 120, 0.2),
+      0 8px 24px rgba(91, 95, 199, 0.32);
+    --shadow-cta-hover: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 4px rgba(46, 49, 120, 0.24),
+      0 14px 34px rgba(91, 95, 199, 0.4);
 
     /* ---- Radius ---- */
     --radius: 14px;
@@ -100,18 +116,18 @@
     --popover: 225 14% 12%;
     --popover-foreground: 30 20% 96%;
 
-    --brand: 340 100% 62%; /* #FF3D7A */
-    --brand-hover: 340 100% 70%;
-    --brand-text: 340 100% 62%; /* #FF3D7A — already AA (5.14:1) on dark surfaces */
-    --brand-2: 14 100% 80%;
-    --salmon: 352 100% 74%;
-    --cream: 19 100% 92%;
+    --brand: 236 74% 75%; /* #8E94EE periwinkle */
+    --brand-hover: 236 80% 81%; /* #A6ABF5 */
+    --brand-text: 236 74% 75%; /* #8E94EE — AA (6.31:1) on dark surfaces */
+    --brand-2: 234 49% 85%; /* #C7CBEC lavender */
+    --salmon: 232 34% 68%;
+    --cream: 233 52% 94%;
 
     --foreground: 30 20% 96%;
     --text-secondary: 220 8% 64%; /* #9AA0AB */
     --text-tertiary: 222 8% 46%;
 
-    --primary: 340 100% 62%;
+    --primary: 236 74% 75%;
     --primary-foreground: 0 0% 100%;
     --secondary: 225 12% 16%; /* #23262E */
     --secondary-foreground: 30 20% 96%;
@@ -123,7 +139,7 @@
     --border: 225 10% 18%; /* #272A32 */
     --border-strong: 225 9% 26%;
     --input: 225 9% 26%;
-    --ring: 340 100% 62%;
+    --ring: 236 74% 75%;
 
     --success: 142 64% 48%;
     --warning: 38 92% 58%;
@@ -132,20 +148,30 @@
 
     --glow-ambient: radial-gradient(
       60% 60% at 50% 0%,
-      rgba(255, 61, 122, 0.2) 0%,
-      rgba(255, 177, 153, 0.1) 45%,
+      rgba(142, 148, 238, 0.2) 0%,
+      rgba(147, 154, 202, 0.1) 45%,
+      transparent 72%
+    );
+    --hero-sheen: radial-gradient(
+      120% 140% at 0% 0%,
+      rgba(142, 148, 238, 0.18) 0%,
+      rgba(91, 95, 199, 0.08) 42%,
       transparent 72%
     );
 
     --glass-bg: 24 26 32 / 0.62;
     --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-tint: rgba(80, 20, 45, 0.35);
+    --glass-tint: rgba(50, 54, 110, 0.38);
     --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 28px rgba(0, 0, 0, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
     --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.45);
     --shadow-hover: 0 14px 36px rgba(0, 0, 0, 0.6);
-    --shadow-brand: 0 8px 30px rgba(255, 61, 122, 0.35);
+    --shadow-brand: 0 8px 30px rgba(142, 148, 238, 0.35);
+    --shadow-cta: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.5),
+      0 8px 26px rgba(91, 95, 199, 0.45);
+    --shadow-cta-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 4px rgba(0, 0, 0, 0.55),
+      0 16px 38px rgba(91, 95, 199, 0.55);
   }
 }
 
@@ -203,14 +229,14 @@
   /* ---- Button recipes ---- */
   .btn-brand {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 h-11 min-h-[44px]
-      text-sm font-medium text-primary-foreground shadow-brand transition
-      hover:bg-brand-hover active:scale-[0.98] focus-visible:outline-none
+      text-sm font-medium text-primary-foreground shadow-cta ring-1 ring-inset ring-white/10 transition-all duration-200
+      hover:bg-brand-hover hover:-translate-y-px hover:shadow-cta-hover active:translate-y-0 active:scale-[0.98] focus-visible:outline-none
       focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
   .btn-gradient {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-6 h-12 min-h-[44px]
-      text-sm font-semibold text-white shadow-brand bg-brand-gradient transition
-      hover:brightness-105 active:scale-[0.98] focus-visible:outline-none
+      text-sm font-semibold text-white shadow-cta ring-1 ring-inset ring-white/15 bg-brand-gradient-cta transition-all duration-200
+      hover:-translate-y-px hover:shadow-cta-hover hover:brightness-[1.04] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none
       focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
   .btn-ghost-outline {
@@ -237,7 +263,7 @@
 
   /* ---- Chips ---- */
   .chip {
-    @apply inline-flex items-center rounded-full bg-muted px-3 h-7 text-xs font-medium text-text-secondary;
+    @apply inline-flex items-center rounded-full border border-border bg-muted/60 px-3 h-7 text-xs font-medium text-text-secondary;
   }
   .chip-active {
     @apply inline-flex items-center rounded-full bg-brand px-3 h-7 text-xs font-medium text-primary-foreground;

@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGrid } from '@/app/components/providers/gridProvider';
 import { toast } from 'sonner';
-import { ERC725 } from '@erc725/erc725.js';
 import { useUpProvider } from '@/app/components/providers/upProvider';
 import { createPublicClient, http } from 'viem';
 import { lukso } from 'viem/chains';
@@ -95,6 +94,7 @@ export function useInstallApp() {
         valueContent: 'VerifiableURI'
       }];
 
+      const { ERC725 } = await import('@erc725/erc725.js');
       const erc725 = new ERC725(schema);
 
       // Encode metadata
@@ -233,6 +233,7 @@ export function useInstallApp() {
         valueContent: 'VerifiableURI'
       }];
 
+      const { ERC725 } = await import('@erc725/erc725.js');
       const erc725 = new ERC725(schema);
 
       // Encode metadata

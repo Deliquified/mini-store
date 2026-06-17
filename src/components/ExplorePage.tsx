@@ -9,8 +9,10 @@ import TopChartsSlider from "./TopChartsSlider";
 import {
   getAppsByCategory,
   apps,
+  shuffle,
   App,
 } from "@/data/appCatalog";
+import { useHydrated } from "@/hooks/useHydrated";
 import { cn } from "@/lib/utils";
 
 interface ExplorePageProps {
@@ -90,26 +92,38 @@ function DiscoverSection({
 }
 
 export default function ExplorePage({ onAppClick }: ExplorePageProps) {
-  // ---- Data (business logic preserved verbatim) ----
-  const { defiApps, recommendedApps, nftApps, allApps } = useMemo(() => {
-    const defi = getAppsByCategory("DeFi");
-
-    const nfts = getAppsByCategory("NFTs");
-
-    // Recommended = Social + DeFi, de-duplicated, capped at 6.
-    const recommended = [...getAppsByCategory("Social"), ...getAppsByCategory("DeFi")]
-      .filter(
-        (app, index, self) => index === self.findIndex((a) => a.id === app.id)
-      )
-      .slice(0, 6);
+  // Stable, deterministic base lists — identical on the server and the first
+  // client render so hydration matches.
+  const base = useMemo(() => {
+    const recommendedPool = [
+      ...getAppsByCategory("Social"),
+      ...getAppsByCategory("DeFi"),
+    ].filter(
+      (app, index, self) => index === self.findIndex((a) => a.id === app.id)
+    );
 
     return {
-      defiApps: defi,
-      recommendedApps: recommended,
-      nftApps: nfts,
-      allApps: Object.values(apps),
+      defi: getAppsByCategory("DeFi"),
+      nfts: getAppsByCategory("NFTs"),
+      recommendedPool,
+      all: Object.values(apps),
     };
   }, []);
+
+  // After mount we re-randomize the order once. A fresh mount happens on every
+  // full page load, so the store reshuffles on every reload (see useHydrated).
+  const hydrated = useHydrated();
+  const { defiApps, recommendedApps, nftApps, allApps } = useMemo(() => {
+    const order = <T,>(list: T[]) => (hydrated ? shuffle(list) : list);
+
+    return {
+      defiApps: order(base.defi),
+      nftApps: order(base.nfts),
+      // Shuffle the pool first, then cap at 6 so which six surface also varies.
+      recommendedApps: order(base.recommendedPool).slice(0, 6),
+      allApps: order(base.all),
+    };
+  }, [hydrated, base]);
 
   return (
     <div className="flex flex-col gap-12 pb-4 md:gap-16">

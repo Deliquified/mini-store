@@ -155,7 +155,6 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
     if (app.publisherProfile && typeof app.publisherProfile === "string") {
       fetchProfileData(app.publisherProfile);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app]);
 
   const fetchProfileData = async (profileId: string) => {
@@ -230,7 +229,6 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openImageViewer, app]);
 
   // ---- Motion helpers ----
@@ -301,19 +299,31 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
             {/* ---- App header hero (glass-tinted) ---- */}
             <motion.section
               variants={fadeUp}
-              className="glass-tint relative overflow-hidden rounded-xl p-5 sm:p-7"
+              className="glass relative overflow-hidden rounded-[1.75rem] p-5 sm:p-7"
             >
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                {/* Squircle icon */}
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/40 bg-card shadow-rest sm:h-24 sm:w-24">
-                  <Image
-                    src={app.icon || ""}
-                    alt={`${app.app.name} app icon`}
-                    fill
-                    quality={95}
-                    sizes="96px"
-                    className="object-cover"
+              {/* Decorative corner sheen — soft brand wash, top-left */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-hero-sheen"
+              />
+
+              <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+                {/* Squircle icon with a soft brand glow for depth */}
+                <div className="relative shrink-0">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -inset-3 rounded-[2rem] bg-brand/15 blur-2xl"
                   />
+                  <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-white/65 bg-white/35 shadow-glass ring-1 ring-inset ring-white/55 backdrop-blur-xl sm:h-24 sm:w-24">
+                    <Image
+                      src={app.icon || ""}
+                      alt={`${app.app.name} app icon`}
+                      fill
+                      quality={95}
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -344,14 +354,14 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
               </div>
 
               {/* ---- Context-aware ACTION ---- */}
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 {canInstallToGrid ? (
                   <>
                     {/* In the UP grid: Add to Grid (primary) + Open (secondary) */}
                     <Button
-                      variant="gradient"
+                      variant="glass-light"
                       size="pill"
-                      className="h-12 w-full text-sm font-semibold sm:w-auto sm:flex-1"
+                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:flex-1"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleInstall(app);
@@ -374,7 +384,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                       )}
                     </Button>
                     <Button
-                      variant="ghost-outline"
+                      variant="glass-light"
                       size="pill"
                       className="h-12 w-full text-sm font-medium sm:w-auto"
                       onClick={(e) => {
@@ -390,9 +400,9 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                   <>
                     {/* Outside the grid: Open / Launch is the primary action */}
                     <Button
-                      variant="gradient"
+                      variant="glass-light"
                       size="pill"
-                      className="h-12 w-full text-sm font-semibold sm:w-auto sm:flex-1"
+                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:flex-1"
                       onClick={(e) => {
                         e.stopPropagation();
                         openApp(app);

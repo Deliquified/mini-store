@@ -113,8 +113,10 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
                     type="button"
                     onClick={() => onAppClick(app)}
                     aria-label={`View details for ${app.title}`}
-                    className="relative flex min-h-[16rem] w-full flex-col justify-end gap-5 p-6 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-inset sm:min-h-[18rem] sm:p-8"
-                  >
+                    className="absolute inset-0 z-10 w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-inset"
+                  />
+
+                  <div className="pointer-events-none relative z-20 flex min-h-[16rem] w-full flex-col justify-end gap-5 p-6 text-left sm:min-h-[18rem] sm:p-8">
                     {/* Eyebrow */}
                     <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-white backdrop-blur-sm">
                       <Sparkles className="h-3 w-3" aria-hidden="true" />
@@ -134,7 +136,7 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
                           />
                         </div>
                         <div className="min-w-0">
-                          <h2 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-white sm:text-4xl">
+                          <h2 className="font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
                             {app.title}
                           </h2>
                           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-white/85">
@@ -151,7 +153,7 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
                     </div>
 
                     {/* Context-aware actions */}
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="pointer-events-auto flex flex-wrap items-center gap-3">
                       {primary.kind === "install" ? (
                         <>
                           <ActionButton
@@ -164,7 +166,7 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
                               primary.run(app);
                             }}
                             ariaLabel={`${primary.label}: ${app.title}`}
-                            variant="gradient"
+                            variant="glass-light"
                           />
                           {/* Secondary Open while in grid context */}
                           <ActionButton
@@ -189,11 +191,11 @@ export default function FeaturedBanner({ onAppClick }: FeaturedBannerProps) {
                             primary.run(app);
                           }}
                           ariaLabel={`${primary.label} ${app.title}`}
-                          variant="gradient"
+                          variant="glass-light"
                         />
                       )}
                     </div>
-                  </button>
+                  </div>
                 </motion.div>
               </CarouselItem>
             );

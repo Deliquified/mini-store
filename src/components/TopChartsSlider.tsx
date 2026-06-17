@@ -1,50 +1,74 @@
 "use client";
 
-import { App, getAppsByCategory, getPrimaryCategory } from "@/data/appCatalog";
 import Image from "next/image";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+
+import {
+  App,
+  categories as appCategories,
+  getPrimaryCategory,
+} from "@/data/appCatalog";
 
 interface TopChartsSliderProps {
   apps: App[];
   onAppClick: (app: App) => void;
 }
 
-type ChartFilter = "defi" | "staking" | "nfts";
+type ChartFilter = string;
 
-const FILTERS: { id: ChartFilter; label: string; category: string }[] = [
-  { id: "defi", label: "DeFi", category: "DeFi" },
-  { id: "staking", label: "Staking", category: "Staking" },
-  { id: "nfts", label: "NFTs", category: "NFTs" },
+const PRIORITY_CATEGORIES = [
+  "DeFi",
+  "Staking",
+  "NFTs",
+  "Marketplaces",
+  "Community",
+  "Social",
+  "Infrastructure",
+  "Exchanges",
 ];
 
 export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderProps) {
-  const [activeFilter, setActiveFilter] = useState<ChartFilter>("defi");
+  const [activeFilter, setActiveFilter] = useState<ChartFilter>("DeFi");
   const reduceMotion = useReducedMotion();
+  const filterOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    apps.forEach((app) => {
+      app.categories.forEach((category) => {
+        counts.set(category, (counts.get(category) ?? 0) + 1);
+      });
+    });
+
+    return Object.values(appCategories)
+      .map((category) => ({
+        id: category.id,
+        label: category.displayName,
+        count: counts.get(category.id) ?? 0,
+      }))
+      .filter((category) => category.count > 0)
+      .sort((a, b) => {
+        const aPriority = PRIORITY_CATEGORIES.indexOf(a.id);
+        const bPriority = PRIORITY_CATEGORIES.indexOf(b.id);
+
+        if (aPriority !== -1 || bPriority !== -1) {
+          return (
+            (aPriority === -1 ? Number.MAX_SAFE_INTEGER : aPriority) -
+            (bPriority === -1 ? Number.MAX_SAFE_INTEGER : bPriority)
+          );
+        }
+
+        return a.label.localeCompare(b.label);
+      });
+  }, [apps]);
 
   if (!apps || apps.length === 0) {
     return null;
   }
 
-  // ---- Filtering logic preserved exactly from the original implementation ----
-  const getFilteredApps = (): App[] => {
-    const category =
-      activeFilter === "defi" ? "DeFi" : activeFilter === "staking" ? "Staking" : "NFTs";
-
-    const categoryApps = getAppsByCategory(category);
-
-    // Staking de-dupes anything already surfaced under DeFi.
-    if (category === "Staking") {
-      const defiApps = getAppsByCategory("DeFi");
-      return categoryApps.filter(
-        (app) => !defiApps.some((defiApp) => defiApp.id === app.id)
-      );
-    }
-
-    return categoryApps;
-  };
-
-  const filteredApps = getFilteredApps();
+  const filteredApps = apps.filter((app) => app.categories.includes(activeFilter));
+  const activeLabel =
+    filterOptions.find((filter) => filter.id === activeFilter)?.label ?? activeFilter;
 
   return (
     <section className="mb-10" aria-labelledby="top-charts-heading">
@@ -65,38 +89,43 @@ export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderPro
 
       {/* Glass segmented filter control */}
       <div
-        className="seg-track mb-5"
+        className="seg-track mb-5 max-w-full overflow-x-auto"
         role="tablist"
         aria-label="Filter top charts by category"
       >
-        {FILTERS.map((filter) => {
-          const isActive = activeFilter === filter.id;
-          return (
-            <button
-              key={filter.id}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveFilter(filter.id)}
-              className={`relative min-h-[44px] min-w-[88px] rounded-full px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                isActive ? "text-brand-text" : "text-text-secondary hover:text-foreground"
-              }`}
-            >
-              {isActive && (
-                <motion.span
-                  layoutId="top-charts-pill"
-                  className="absolute inset-0 rounded-full bg-card shadow-rest"
-                  transition={
-                    reduceMotion
-                      ? { duration: 0 }
-                      : { type: "spring", stiffness: 380, damping: 32 }
-                  }
-                />
-              )}
-              <span className="relative z-10">{filter.label}</span>
-            </button>
-          );
-        })}
+        <div className="flex min-w-max gap-1">
+          {filterOptions.map((filter) => {
+            const isActive = activeFilter === filter.id;
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveFilter(filter.id)}
+                className={`relative min-h-[44px] min-w-[88px] rounded-full px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  isActive ? "text-brand-text" : "text-text-secondary hover:text-foreground"
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="top-charts-pill"
+                    className="absolute inset-0 rounded-full bg-card shadow-rest"
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { type: "spring", stiffness: 380, damping: 32 }
+                    }
+                  />
+                )}
+                <span className="relative z-10 inline-flex items-center gap-1.5">
+                  {filter.label}
+                  <span className="text-xs text-text-tertiary">{filter.count}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Ranked rows — solid content card, no glass (data-dense) */}
@@ -129,7 +158,7 @@ export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderPro
                     type="button"
                     onClick={() => onAppClick(app)}
                     aria-label={`View ${app.app.name}, ranked number ${rank} in ${
-                      FILTERS.find((f) => f.id === activeFilter)?.label
+                      activeLabel
                     }`}
                     className="group relative flex w-full min-h-[44px] items-center gap-3 px-4 py-3 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:gap-4 sm:px-5"
                   >

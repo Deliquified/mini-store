@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 
@@ -23,20 +23,6 @@ interface AppSliderProps {
  */
 export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
   const reduceMotion = useReducedMotion();
-  const railRef = useRef<HTMLUListElement>(null);
-
-  // "See all" affordance: nudge the rail forward by roughly one viewport so the
-  // overflow stays discoverable on pointer-only / no-trackpad desktops.
-  const scrollForward = useCallback(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const atEnd =
-      rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
-    rail.scrollTo({
-      left: atEnd ? 0 : rail.scrollLeft + Math.round(rail.clientWidth * 0.85),
-      behavior: reduceMotion ? "auto" : "smooth",
-    });
-  }, [reduceMotion]);
 
   if (!apps || apps.length === 0) {
     return null;
@@ -55,15 +41,14 @@ export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
           </h2>
         </div>
 
-        <button
-          type="button"
-          onClick={scrollForward}
-          aria-label={`See more ${title}`}
+        <Link
+          href="/search"
+          aria-label="See all apps"
           className="group inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-brand-text transition hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           See all
           <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </button>
+        </Link>
       </div>
 
       {/* Rail: native scroll-snap + right-edge mask to signal overflow */}
@@ -77,7 +62,6 @@ export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
         }}
       >
         <ul
-          ref={railRef}
           className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-2 sm:px-6"
         >
           {apps.map((app, index) => {

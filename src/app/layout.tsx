@@ -17,7 +17,10 @@ const display = Space_Grotesk({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "LUKSO UP!Store",
   description:
     "Discover and launch apps for your Universal Profile. Browse the LUKSO UP!Store anywhere, or add apps directly to your Grid.",
