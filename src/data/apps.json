@@ -400,5 +400,45 @@
       "Locks",
       "Multisender"
     ]
+  },
+  "groov": {
+    "name": "Groov: Collect Music Onchain",
+    "url": "https://www.groovonchain.com/",
+    "developer": "Groov",
+    "publisher": "0x7a66Aa55002B34FAECEcF1977D34646690d3c330",
+    "categories": [
+      "Music",
+      "NFTs"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "Music",
+      "Collectibles",
+      "Fanzones"
+    ]
+  },
+  "permission-control": {
+    "name": "Permission Control: Manage UP Controllers",
+    "url": "https://permissioncontrol.app/",
+    "developer": "Permission Control",
+    "publisher": "0x65Cb19C9c7b5A6695C48936Cf8917CF34438D7D3",
+    "categories": [
+      "Security",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "Controllers",
+      "Permissions",
+      "Universal Profiles"
+    ]
   }
 }
