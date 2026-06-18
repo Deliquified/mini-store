@@ -51,7 +51,7 @@ export default function AppCard({
           alt={`${name} app icon`}
           fill
           sizes={`${s.iconPx}px`}
-          className="object-cover"
+          className="object-contain"
         />
         {/* Subtle glass sheen for depth — pointer-events safe */}
         <span
