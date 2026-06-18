@@ -251,6 +251,27 @@
       "DeFi"
     ]
   },
+  "potato-tipper": {
+    "name": "POTATO Tipper: Tip New Followers",
+    "url": "https://potatotipper.app",
+    "developer": "Jean Cavallera",
+    "publisher": "0x5eed04004c2D46C12Fe30C639A90AD5d6F5D573d",
+    "categories": [
+      "Social",
+      "Community"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "POTATO",
+      "Followers",
+      "Tipping"
+    ]
+  },
   "profile-jump": {
     "name": "Profile Jump: Discover Universal Profiles",
     "url": "https://profilejump.com/",
