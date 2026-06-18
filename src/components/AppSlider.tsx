@@ -98,7 +98,7 @@ export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
                           alt={`${name} icon`}
                           fill
                           sizes="(max-width: 640px) 132px, 148px"
-                          className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                          className="object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
                         />
                       ) : (
                         <div
