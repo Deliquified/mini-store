@@ -116,6 +116,50 @@
       "Wallet"
     ]
   },
+  "openclaw": {
+    "name": "OpenClaw: Authorize AI Agents",
+    "url": "https://openclaw.universalprofile.cloud/",
+    "sourceCode": "https://github.com/emmet-bot/openclaw-universalprofile-skill",
+    "developer": "LUKSO Agent",
+    "publisher": "0x293E96ebbf264ed7715cff2b67850517De70232a",
+    "categories": [
+      "AI",
+      "Security",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "OpenClaw",
+      "AI Agents",
+      "Controller"
+    ]
+  },
+  "universal-profile-authorize": {
+    "name": "UP Authorize: Add Controllers",
+    "url": "https://authorize.universalprofile.cloud/",
+    "developer": "LUKSO Agent",
+    "publisher": "0x293E96ebbf264ed7715cff2b67850517De70232a",
+    "categories": [
+      "Security",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "Universal Profile",
+      "Authorize",
+      "Controller"
+    ]
+  },
   "universal-everything": {
     "name": "Universal Everything: Explore Profiles",
     "url": "https://universaleverything.io/",
