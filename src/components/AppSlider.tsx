@@ -11,6 +11,14 @@ interface AppSliderProps {
   title: string;
   apps: App[];
   onAppClick: (app: App) => void;
+  /**
+   * Accessible name for the rail. On the discover home the surrounding
+   * DiscoverSection owns the visible heading, so the rail itself gets no visible
+   * title (title="") — pass ariaLabel so the section is still labelled.
+   */
+  ariaLabel?: string;
+  /** Overline shown only when this rail renders its own header (title set). */
+  eyebrow?: string;
 }
 
 /**
@@ -21,7 +29,13 @@ interface AppSliderProps {
  * shared design-system tokens. Tasteful entrance/hover/press motion, gated on
  * prefers-reduced-motion. Returns null when there is nothing to show.
  */
-export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
+export default function AppSlider({
+  title,
+  apps,
+  onAppClick,
+  ariaLabel,
+  eyebrow = "Discover",
+}: AppSliderProps) {
   const reduceMotion = useReducedMotion();
 
   if (!apps || apps.length === 0) {
@@ -29,27 +43,27 @@ export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
   }
 
   return (
-    <section className="mb-10" aria-label={title}>
-      {/* Section header: eyebrow + title + see-all affordance */}
-      <div className="mb-4 flex items-end justify-between gap-4">
-        <div className="min-w-0">
-          <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.06em] text-text-secondary">
-            Discover
-          </p>
-          <h2 className="truncate font-display text-[22px] font-semibold leading-tight text-foreground">
-            {title}
-          </h2>
-        </div>
+    <section aria-label={ariaLabel || title || undefined}>
+      {/* Self-owned header only when this rail provides its own title. On the
+          discover home the parent DiscoverSection owns the heading + See all, so
+          title="" and this block is skipped entirely (no stray eyebrow). */}
+      {title && (
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <p className="eyebrow mb-1">{eyebrow}</p>
+            <h2 className="section-h2 truncate">{title}</h2>
+          </div>
 
-        <Link
-          href="/search"
-          aria-label="See all apps"
-          className="group inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-brand-text transition hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          See all
-          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      </div>
+          <Link
+            href="/search"
+            aria-label="See all apps"
+            className="group inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-brand-text transition hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            See all
+            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      )}
 
       {/* Rail: native scroll-snap + right-edge mask to signal overflow */}
       <div
@@ -83,7 +97,7 @@ export default function AppSlider({ title, apps, onAppClick }: AppSliderProps) {
                 <motion.button
                   type="button"
                   onClick={() => onAppClick(app)}
-                  aria-label={`Open ${name}`}
+                  aria-label={category ? `View ${name}, ${category}` : `View ${name}`}
                   whileHover={reduceMotion ? undefined : { y: -2, scale: 1.01 }}
                   whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}

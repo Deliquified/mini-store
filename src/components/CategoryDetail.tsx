@@ -80,9 +80,7 @@ export default function CategoryDetail({ category, onBack, onAppClick }: Categor
             <ArrowLeft className="h-5 w-5" aria-hidden />
           </button>
           <div className="min-w-0">
-            <p className="truncate text-[11px] font-medium uppercase tracking-[0.06em] text-brand-text">
-              Category
-            </p>
+            <p className="eyebrow truncate">Category</p>
             <h1 className="truncate font-display text-base font-semibold leading-tight sm:text-lg">
               {title}
             </h1>

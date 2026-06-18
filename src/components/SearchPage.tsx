@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BadgePercent,
   Bot,
@@ -73,6 +73,16 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("all");
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  // Honor a ?category= deep link (the discover-home "See all" rails). Read after
+  // mount so SSR/first render stays on "all" and hydration matches; only accept
+  // a value that exists in the taxonomy.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("category");
+    if (param && appCategories[param]) {
+      setSelectedCategory(param);
+    }
+  }, []);
 
   const allApps = useMemo(() => Object.values(apps), []);
   const allCategories = useMemo(() => Object.values(appCategories), []);

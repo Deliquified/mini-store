@@ -117,7 +117,7 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
                     onClick={() => handleTabChange(t.id)}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "relative px-3 h-9 text-sm font-medium transition-colors min-h-[44px]",
+                      "relative inline-flex h-9 items-center px-3 text-sm font-medium transition-colors",
                       isActive
                         ? "text-brand-text"
                         : "text-text-secondary hover:text-foreground"
@@ -135,11 +135,21 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
               })}
               <Link
                 href={STORE_LINK.href}
-                className="relative flex h-9 min-h-[44px] items-center px-3 text-sm font-medium text-text-secondary transition-colors hover:text-foreground"
+                className="relative flex h-9 items-center px-3 text-sm font-medium text-text-secondary transition-colors hover:text-foreground"
               >
                 {STORE_LINK.label}
               </Link>
             </nav>
+
+            {/* Mobile: compact Store link (desktop uses the nav above). Keeps
+                the directory one tap away without a second header row. */}
+            <Link
+              href={STORE_LINK.href}
+              aria-label={STORE_LINK.label}
+              className="btn-glass md:hidden"
+            >
+              <Store className="h-5 w-5" aria-hidden="true" />
+            </Link>
 
             <ThemeToggle />
 
@@ -178,37 +188,6 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
           </div>
         </div>
 
-        {/* ---- Mobile top segmented control (we never own the bottom edge) ---- */}
-        <div className="border-t border-border px-4 py-2 md:hidden">
-          <div className="seg-track w-full">
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              const isActive = activeTab === t.id && !selectedApp;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleTabChange(t.id)}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 min-h-[44px]",
-                    isActive ? "seg-active" : "seg-inactive"
-                  )}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  {t.label}
-                </button>
-              );
-            })}
-            <Link
-              href={STORE_LINK.href}
-              className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
-            >
-              <Store className="h-4 w-4" aria-hidden="true" />
-              {STORE_LINK.label}
-            </Link>
-          </div>
-        </div>
       </header>
 
       {/* ---- Main content ---- */}

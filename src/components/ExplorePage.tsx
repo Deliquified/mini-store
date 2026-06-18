@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 import FeaturedBanner from "./FeaturedBanner";
 import AppSlider from "./AppSlider";
@@ -15,7 +17,6 @@ import {
 } from "@/data/appCatalog";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useTrending } from "@/hooks/useTrending";
-import { cn } from "@/lib/utils";
 
 interface ExplorePageProps {
   onAppClick: (app: App) => void;
@@ -28,19 +29,12 @@ interface ExplorePageProps {
  */
 interface DiscoverSectionProps {
   eyebrow: string;
-  /**
-   * Optional section title. When omitted, the composed child renders its own
-   * heading (e.g. TopChartsSlider / FeaturedBanner) and we only show the
-   * eyebrow + intro so the headers never visually double up.
-   */
+  /** Section title (H2). Every discover-home section now owns its heading here,
+   *  so child components render content only and headers never double up. */
   title?: string;
   intro?: string;
-  /**
-   * AppSlider always renders its own <h2>. When we own the heading we pass it
-   * an empty title; this flag hides that now-empty child heading so it does not
-   * leave a dead gap above the rail.
-   */
-  collapseChildHeading?: boolean;
+  /** When set, a "See all" link sits opposite the title (e.g. category rails). */
+  seeAllHref?: string;
   children: React.ReactNode;
 }
 
@@ -48,7 +42,7 @@ function DiscoverSection({
   eyebrow,
   title,
   intro,
-  collapseChildHeading = false,
+  seeAllHref,
   children,
 }: DiscoverSectionProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -70,15 +64,22 @@ function DiscoverSection({
       viewport={{ once: true, amount: 0.18 }}
       className="scroll-mt-24"
     >
-      {/* Section intro */}
+      {/* Section header — the single source of eyebrow + title + See all */}
       <header className="mb-4 md:mb-5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-brand-text">
-          {eyebrow}
-        </p>
-        {title && (
-          <h2 className="mt-1 font-display text-[22px] font-semibold leading-tight text-foreground md:text-[28px]">
-            {title}
-          </h2>
+        <p className="eyebrow">{eyebrow}</p>
+        {(title || seeAllHref) && (
+          <div className="mt-1 flex items-end justify-between gap-4">
+            {title && <h2 className="section-h2 min-w-0 truncate">{title}</h2>}
+            {seeAllHref && (
+              <Link
+                href={seeAllHref}
+                className="group inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-brand-text transition hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                See all
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            )}
+          </div>
         )}
         {intro && (
           <p className="mt-1.5 max-w-prose text-[15px] leading-relaxed text-text-secondary">
@@ -86,9 +87,7 @@ function DiscoverSection({
           </p>
         )}
       </header>
-      <div className={cn(collapseChildHeading && "[&_h2:empty]:hidden")}>
-        {children}
-      </div>
+      {children}
     </motion.section>
   );
 }
@@ -140,46 +139,35 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
   return (
     <div className="flex flex-col gap-12 pb-4 md:gap-16">
       {/* Lead-in headline — the editorial top of the discover home */}
-      <div className="-mb-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-text-tertiary">
-          LUKSO UP!Store
-        </p>
-        <h1 className="mt-1.5 font-display text-[30px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground md:text-[40px]">
+      <div>
+        <p className="eyebrow">LUKSO UP!Store</p>
+        <h1 className="mt-1.5 text-balance font-display text-[30px] font-bold leading-[1.1] tracking-[-0.02em] text-foreground md:text-[40px]">
           Discover apps for your{" "}
           <span className="bg-brand-gradient bg-clip-text text-transparent">
             Universal Profile
           </span>
         </h1>
-        <p className="mt-2 max-w-prose text-[15px] leading-relaxed text-text-secondary md:text-[16px]">
-          Hand-picked mini-apps built on LUKSO — open any of them instantly, or
-          add them to your grid when you are signed in.
+        <p className="mt-2 max-w-prose text-balance text-[15px] leading-relaxed text-text-secondary md:text-[16px]">
+          Apps built on LUKSO — open any of them instantly, or add them to your
+          grid when you are signed in.
         </p>
       </div>
 
-      {/* Featured — the single focal band. FeaturedBanner owns its own visual,
-          so DiscoverSection contributes only the eyebrow + intro. */}
+      {/* Featured — the focal band. FeaturedBanner renders the carousel only;
+          DiscoverSection owns the heading like every other section. */}
       <DiscoverSection
-        eyebrow="Featured"
+        eyebrow="Spotlight"
+        title="Featured"
         intro="A rotating mix of standout apps, front and center."
       >
         <FeaturedBanner apps={featuredSlides} onAppClick={onAppClick} />
       </DiscoverSection>
 
-      {/* DeFi rail — DiscoverSection owns the heading; AppSlider title is
-          suppressed (empty) to avoid a duplicate header. */}
-      <DiscoverSection
-        eyebrow="Finance"
-        title="DeFi apps"
-        intro="Swap, send and stake LYX without leaving your profile."
-        collapseChildHeading
-      >
-        <AppSlider title="" apps={defiApps} onAppClick={onAppClick} />
-      </DiscoverSection>
-
-      {/* Top charts — data-dense, solid surface. TopChartsSlider renders its own
-          "Top charts" heading and filter tabs, so we add only the eyebrow + intro. */}
+      {/* Trending — social proof. TopChartsSlider renders the filter + table
+          only; the heading lives here. */}
       <DiscoverSection
         eyebrow="Trending"
+        title="Trending now"
         intro="What the LUKSO community is opening most right now."
       >
         <TopChartsSlider
@@ -189,24 +177,48 @@ export default function ExplorePage({ onAppClick }: ExplorePageProps) {
         />
       </DiscoverSection>
 
-      {/* NFTs rail */}
-      <DiscoverSection
-        eyebrow="Collect"
-        title="NFTs & collectibles"
-        intro="Mint, swipe and showcase digital assets."
-        collapseChildHeading
-      >
-        <AppSlider title="" apps={nftApps} onAppClick={onAppClick} />
-      </DiscoverSection>
-
-      {/* Recommended rail */}
+      {/* Recommended rail — curated mix, no category "See all". */}
       <DiscoverSection
         eyebrow="For you"
         title="Recommended"
         intro="A mix of social and finance apps worth a look."
-        collapseChildHeading
       >
-        <AppSlider title="" apps={recommendedApps} onAppClick={onAppClick} />
+        <AppSlider
+          title=""
+          ariaLabel="Recommended apps"
+          apps={recommendedApps}
+          onAppClick={onAppClick}
+        />
+      </DiscoverSection>
+
+      {/* DeFi rail — category-scoped "See all". */}
+      <DiscoverSection
+        eyebrow="Finance"
+        title="DeFi apps"
+        intro="Swap, send and stake LYX without leaving your profile."
+        seeAllHref="/search?category=DeFi"
+      >
+        <AppSlider
+          title=""
+          ariaLabel="DeFi apps"
+          apps={defiApps}
+          onAppClick={onAppClick}
+        />
+      </DiscoverSection>
+
+      {/* NFTs rail — category-scoped "See all". */}
+      <DiscoverSection
+        eyebrow="Collect"
+        title="NFTs & collectibles"
+        intro="Mint, swipe and showcase digital assets."
+        seeAllHref="/search?category=NFTs"
+      >
+        <AppSlider
+          title=""
+          ariaLabel="NFTs & collectibles"
+          apps={nftApps}
+          onAppClick={onAppClick}
+        />
       </DiscoverSection>
     </div>
   );

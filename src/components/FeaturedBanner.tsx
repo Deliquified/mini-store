@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, PlusCircle, Sparkles } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
+import { ArrowUpRight, Pause, Play, PlusCircle } from "lucide-react";
 
 import {
   Carousel,
@@ -21,6 +21,8 @@ import { useAppLaunch } from "@/hooks/useAppLaunch";
 import { useGrid } from "@/app/components/providers/gridProvider";
 import { cn } from "@/lib/utils";
 import GridSelectionDialog from "./GridSelectionDialog";
+
+const AUTOPLAY_DWELL_MS = 6500;
 
 interface FeaturedBannerProps {
   apps?: FeaturedApp[];
@@ -48,6 +50,9 @@ export default function FeaturedBanner({
   const [api, setApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [slideCount, setSlideCount] = useState(slides.length);
+  // userPaused = explicit pause toggle; interacting = transient hover/focus.
+  const [userPaused, setUserPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
   const slideSignature = useMemo(
     () => slides.map((app) => app.id ?? app.app.name).join("|"),
     [slides]
@@ -78,25 +83,37 @@ export default function FeaturedBanner({
     };
   }, [api, slideSignature]);
 
+  // Auto-advance, gently. Pauses on reduced-motion, single slide, explicit
+  // pause, hover/focus, or a hidden tab (WCAG 2.2.2 — see the Pause control).
+  const autoplayEnabled =
+    !reduceMotion && slideCount > 1 && !userPaused && !interacting;
+
   useEffect(() => {
-    if (!api || reduceMotion || slideCount < 2) return;
+    if (!api || !autoplayEnabled) return;
 
     const intervalId = window.setInterval(() => {
       if (document.visibilityState === "visible") {
         api.scrollNext();
       }
-    }, 3000);
+    }, AUTOPLAY_DWELL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [api, reduceMotion, slideCount]);
+  }, [api, autoplayEnabled]);
 
   const handleDotClick = useCallback(
     (index: number) => api?.scrollTo(index),
     [api]
   );
 
+  const activeTitle = slides[selectedIndex]?.title;
+
   return (
-    <section className="mb-10" aria-label="Featured apps">
+    <div
+      onMouseEnter={() => setInteracting(true)}
+      onMouseLeave={() => setInteracting(false)}
+      onFocusCapture={() => setInteracting(true)}
+      onBlurCapture={() => setInteracting(false)}
+    >
       <Carousel
         className="w-full touch-pan-y"
         opts={{ align: "start", loop: true }}
@@ -106,20 +123,15 @@ export default function FeaturedBanner({
           {slides.map((app, index) => {
             const primary = getPrimaryAction(app);
             const category = getPrimaryCategory(app);
-            const installingThis =
-              isInstalling && pendingApp?.id === app.id;
+            const installingThis = isInstalling && pendingApp?.id === app.id;
 
             return (
               <CarouselItem
                 key={app.id ?? index}
-                className="h-[29rem] basis-[88%] sm:h-96 sm:basis-full lg:h-[26rem]"
+                aria-label={`${app.title} (${index + 1} of ${slides.length})`}
+                className="h-[clamp(19rem,46vh,26rem)] basis-[88%] sm:basis-full"
               >
-                <motion.div
-                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="group relative isolate h-full overflow-hidden rounded-xl"
-                >
+                <div className="group relative isolate h-full overflow-hidden rounded-xl">
                   {/* Catalog art backdrop */}
                   <div className="absolute inset-0 -z-10">
                     <Image
@@ -134,9 +146,11 @@ export default function FeaturedBanner({
                         !reduceMotion && "group-hover:scale-[1.04]"
                       )}
                     />
-                    {/* Brand wash + legibility scrim layered over art */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-brand/35 via-transparent to-brand-2/25 mix-blend-multiply dark:mix-blend-screen" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/45 to-foreground/10 dark:from-background/90 dark:via-background/55 dark:to-background/10" />
+                    {/* Brand wash + legibility scrim layered over art. The dark
+                        scrim is image-independent black so white text always
+                        clears AA regardless of how bright the artwork is. */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-brand/35 via-transparent to-brand-2/25 mix-blend-multiply" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/45 to-foreground/10 dark:from-black/85 dark:via-black/55 dark:to-black/10" />
                   </div>
 
                   {/* Ambient brand glow */}
@@ -157,38 +171,32 @@ export default function FeaturedBanner({
                   />
 
                   <div className="pointer-events-none relative z-20 flex h-full w-full flex-col justify-end gap-5 p-6 text-left sm:p-8">
-                    {/* Eyebrow */}
-                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-white backdrop-blur-sm">
-                      <Sparkles className="h-3 w-3" aria-hidden="true" />
-                      Featured
-                    </span>
+                    {/* Category pill — the band's "Featured" heading is owned by
+                        the surrounding section, so this slot surfaces context. */}
+                    {category && (
+                      <span className="inline-flex w-fit items-center rounded-full bg-white/15 px-3 py-1 text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-white backdrop-blur-sm">
+                        {category}
+                      </span>
+                    )}
 
-                    {/* Identity row: icon + name + category */}
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-glass backdrop-blur-md sm:h-20 sm:w-20">
-                          <Image
-                            src={app.icon ?? ""}
-                            alt={`${app.app.name} icon`}
-                            fill
-                            sizes="80px"
-                            className="object-contain"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <h2 className="font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
-                            {app.title}
-                          </h2>
-                          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-white/85">
-                            <span className="font-medium">{app.app.name}</span>
-                            <span aria-hidden="true" className="text-white/40">
-                              &middot;
-                            </span>
-                            <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-medium">
-                              {category}
-                            </span>
-                          </p>
-                        </div>
+                    {/* Identity row: icon + name */}
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-glass backdrop-blur-md sm:h-20 sm:w-20">
+                        <Image
+                          src={app.icon ?? ""}
+                          alt={`${app.app.name} icon`}
+                          fill
+                          sizes="80px"
+                          className="object-contain"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
+                          {app.title}
+                        </p>
+                        <p className="mt-1 truncate text-sm font-medium text-white/85">
+                          {app.app.name}
+                        </p>
                       </div>
                     </div>
 
@@ -200,81 +208,104 @@ export default function FeaturedBanner({
                             label={installingThis ? "Adding…" : primary.label}
                             icon={<PlusCircle className="h-4 w-4" aria-hidden="true" />}
                             loading={installingThis}
-                            reduceMotion={!!reduceMotion}
                             onClick={(e) => {
                               e.stopPropagation();
                               primary.run(app);
                             }}
                             ariaLabel={`${primary.label}: ${app.title}`}
-                            variant="glass-light"
                           />
                           {/* Secondary Open while in grid context */}
                           <ActionButton
                             label="Open"
                             icon={<ArrowUpRight className="h-4 w-4" aria-hidden="true" />}
-                            reduceMotion={!!reduceMotion}
                             onClick={(e) => {
                               e.stopPropagation();
                               openApp(app);
                             }}
                             ariaLabel={`Open ${app.title}`}
-                            variant="glass-light"
                           />
                         </>
                       ) : (
                         <ActionButton
                           label={primary.label}
                           icon={<ArrowUpRight className="h-4 w-4" aria-hidden="true" />}
-                          reduceMotion={!!reduceMotion}
                           onClick={(e) => {
                             e.stopPropagation();
                             primary.run(app);
                           }}
                           ariaLabel={`${primary.label} ${app.title}`}
-                          variant="glass-light"
                         />
                       )}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </CarouselItem>
             );
           })}
         </CarouselContent>
       </Carousel>
 
-      {/* Carousel dots */}
+      {/* Controls: pause/play + slide dots */}
       {slideCount > 1 && (
-        <div
-          className="mt-4 flex items-center justify-center gap-2"
-          role="tablist"
-          aria-label="Choose featured app"
-        >
-          {Array.from({ length: slideCount }).map((_, i) => {
-            const active = i === selectedIndex;
-            return (
-              <button
-                key={i}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                aria-label={`Go to featured app ${i + 1}`}
-                onClick={() => handleDotClick(i)}
-                className="flex h-11 min-h-[44px] w-6 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <span
-                  className={cn(
-                    "block rounded-full transition-all duration-300",
-                    active
-                      ? "h-2 w-6 bg-brand"
-                      : "h-2 w-2 bg-border-strong hover:bg-text-tertiary"
-                  )}
-                />
-              </button>
-            );
-          })}
+        <div className="mt-3 flex items-center justify-center gap-2">
+          {!reduceMotion && (
+            <Button
+              type="button"
+              variant="glass"
+              size="icon"
+              className="h-9 w-9 min-h-[44px] min-w-[44px]"
+              aria-label={
+                userPaused
+                  ? "Resume automatic slideshow"
+                  : "Pause automatic slideshow"
+              }
+              onClick={() => setUserPaused((paused) => !paused)}
+            >
+              {userPaused ? (
+                <Play className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Pause className="h-4 w-4" aria-hidden="true" />
+              )}
+            </Button>
+          )}
+
+          <div
+            className="flex items-center gap-2"
+            role="group"
+            aria-label="Choose featured app"
+          >
+            {Array.from({ length: slideCount }).map((_, i) => {
+              const active = i === selectedIndex;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  aria-current={active ? "true" : undefined}
+                  aria-label={`Go to featured app ${i + 1}`}
+                  onClick={() => handleDotClick(i)}
+                  className="flex h-11 min-h-[44px] w-6 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                  <span
+                    className={cn(
+                      "block rounded-full transition-all duration-300",
+                      active
+                        ? "h-2 w-6 bg-brand"
+                        : "h-2 w-2 bg-text-tertiary hover:bg-text-secondary"
+                    )}
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
+
+      {/* Active slide announcement for assistive tech */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {activeTitle
+          ? `Showing ${activeTitle}, ${selectedIndex + 1} of ${slideCount}`
+          : ""}
+      </p>
 
       {/* Grid Selection Dialog (grid install path) */}
       {canInstallToGrid && (
@@ -287,20 +318,18 @@ export default function FeaturedBanner({
           onCancel={handleGridSelectionCancel}
         />
       )}
-    </section>
+    </div>
   );
 }
 
-/* ---- Local hero action button with tasteful press motion ---- */
+/* ---- Local hero action button — glass-on-media, always white text ---- */
 
 interface ActionButtonProps {
   label: string;
   icon: React.ReactNode;
   ariaLabel: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  reduceMotion: boolean;
   loading?: boolean;
-  variant: "gradient" | "glass-light";
 }
 
 function ActionButton({
@@ -308,41 +337,31 @@ function ActionButton({
   icon,
   ariaLabel,
   onClick,
-  reduceMotion,
   loading = false,
-  variant,
 }: ActionButtonProps) {
   return (
-    <motion.div
-      whileHover={reduceMotion ? undefined : { y: -2 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="inline-flex"
+    <Button
+      type="button"
+      size="pill"
+      variant="glass"
+      aria-label={ariaLabel}
+      aria-busy={loading || undefined}
+      disabled={loading}
+      onClick={onClick}
+      // Sits on a dark image scrim in BOTH themes, so it stays white-on-media
+      // rather than using the theme-aware glass-light variant (which would be
+      // dark text in light mode). The Button variant supplies the press motion.
+      className="border border-white/40 bg-white/15 font-semibold text-white backdrop-blur-md hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
     >
-      <Button
-        type="button"
-        size="pill"
-        variant={variant === "gradient" ? "gradient" : "glass"}
-        aria-label={ariaLabel}
-        aria-busy={loading || undefined}
-        disabled={loading}
-        onClick={onClick}
-        className={cn(
-          "font-semibold focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-          variant === "glass-light" &&
-            "border border-white/40 bg-white/15 text-white backdrop-blur-md hover:bg-white/25"
-        )}
-      >
-        {loading ? (
-          <span
-            aria-hidden="true"
-            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-          />
-        ) : (
-          icon
-        )}
-        <span>{label}</span>
-      </Button>
-    </motion.div>
+      {loading ? (
+        <span
+          aria-hidden="true"
+          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+        />
+      ) : (
+        icon
+      )}
+      <span>{label}</span>
+    </Button>
   );
 }

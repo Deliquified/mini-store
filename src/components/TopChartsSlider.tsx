@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 import {
   App,
@@ -77,46 +78,38 @@ export default function TopChartsSlider({
     return null;
   }
 
+  // The default filter ("DeFi") may not exist in the current catalog; fall back
+  // to the first available category so the table never opens on an empty tab.
+  const effectiveFilter = filterOptions.some((filter) => filter.id === activeFilter)
+    ? activeFilter
+    : filterOptions[0]?.id ?? "";
+
   // Rank most-opened first within the active category; ties keep incoming order.
   const filteredApps = sortByOpenCount(
-    apps.filter((app) => app.categories.includes(activeFilter)),
+    apps.filter((app) => app.categories.includes(effectiveFilter)),
     trendingCounts ?? {}
   );
   const activeLabel =
-    filterOptions.find((filter) => filter.id === activeFilter)?.label ?? activeFilter;
+    filterOptions.find((filter) => filter.id === effectiveFilter)?.label ?? effectiveFilter;
 
   return (
-    <section className="mb-10" aria-labelledby="top-charts-heading">
-      {/* Header */}
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-text-secondary">
-            Top Charts
-          </p>
-          <h2
-            id="top-charts-heading"
-            className="font-display text-[22px] font-semibold leading-tight text-foreground"
-          >
-            Trending now
-          </h2>
-        </div>
-      </div>
-
-      {/* Glass segmented filter control */}
+    <div>
+      {/* Segmented category filter (the section heading is owned by the parent
+          DiscoverSection). A set of toggle buttons, not tabs — there are no
+          tabpanels — so we use aria-pressed. */}
       <div
         className="seg-track mb-5 max-w-full overflow-x-auto"
-        role="tablist"
-        aria-label="Filter top charts by category"
+        role="group"
+        aria-label="Filter trending apps by category"
       >
         <div className="flex min-w-max gap-1">
           {filterOptions.map((filter) => {
-            const isActive = activeFilter === filter.id;
+            const isActive = effectiveFilter === filter.id;
             return (
               <button
                 key={filter.id}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-pressed={isActive}
                 onClick={() => setActiveFilter(filter.id)}
                 className={`relative min-h-[44px] min-w-[88px] rounded-full px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   isActive ? "text-brand-text" : "text-text-secondary hover:text-foreground"
@@ -135,13 +128,21 @@ export default function TopChartsSlider({
                 )}
                 <span className="relative z-10 inline-flex items-center gap-1.5">
                   {filter.label}
-                  <span className="text-xs text-text-tertiary">{filter.count}</span>
+                  <span className="text-xs tabular-nums text-text-secondary">
+                    {filter.count}
+                  </span>
                 </span>
               </button>
             );
           })}
         </div>
       </div>
+
+      {/* Announce the active category + result count to assistive tech */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {activeLabel}: {filteredApps.length}{" "}
+        {filteredApps.length === 1 ? "app" : "apps"}
+      </p>
 
       {/* Ranked rows — solid content card, no glass (data-dense) */}
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-rest">
@@ -196,7 +197,7 @@ export default function TopChartsSlider({
                     </span>
 
                     {/* Squircle icon */}
-                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-muted shadow-sm">
+                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-muted shadow-rest">
                       <Image
                         src={app.icon || ""}
                         alt={`${app.app.name} icon`}
@@ -217,18 +218,10 @@ export default function TopChartsSlider({
                     </div>
 
                     {/* Chevron affordance */}
-                    <svg
+                    <ChevronRight
                       aria-hidden
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
                       className="h-5 w-5 flex-shrink-0 text-text-tertiary transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-text-secondary"
-                    >
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
+                    />
                   </button>
                 </motion.li>
               );
@@ -236,6 +229,6 @@ export default function TopChartsSlider({
           </ul>
         )}
       </div>
-    </section>
+    </div>
   );
 }
