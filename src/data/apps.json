@@ -19,7 +19,7 @@
   },
   "stakingverse-staking": {
     "name": "Stakingverse: Stake Your LYX",
-    "url": "https://app.stakingverse.io/staking-widget",
+    "url": "https://app.stakingverse.io/",
     "developer": "Stakingverse",
     "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
     "categories": [
@@ -78,77 +78,6 @@
     ],
     "screenshots": 3,
     "featured": true
-  },
-  "stakingverse-holders": {
-    "name": "Stakingverse: Holders",
-    "url": "https://app.stakingverse.io/holders-widget",
-    "developer": "Stakingverse",
-    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
-    "categories": [
-      "DeFi",
-      "Staking",
-      "Community",
-      "Social"
-    ],
-    "gridSize": [
-      1,
-      2
-    ],
-    "screenshots": 1,
-    "featured": true
-  },
-  "stakingverse-tvl": {
-    "name": "Stakingverse: Track TVL",
-    "url": "https://stakingverse.io/tvl-widget",
-    "developer": "Stakingverse",
-    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
-    "categories": [
-      "DeFi",
-      "Staking"
-    ],
-    "gridSize": [
-      1,
-      2
-    ],
-    "screenshots": 1,
-    "featured": true
-  },
-  "stakingverse-dashboard": {
-    "name": "Stakingverse: Dashboard",
-    "url": "https://stakingverse.io/dashboard",
-    "developer": "Stakingverse",
-    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
-    "categories": [
-      "DeFi",
-      "Staking"
-    ],
-    "gridSize": [
-      1,
-      2
-    ],
-    "screenshots": 1,
-    "featured": true
-  },
-  "stakingverse-network-stats": {
-    "name": "Network Stats: LUKSO Chain Metrics",
-    "url": "https://app.stakingverse.io/network-stats",
-    "developer": "Stakingverse",
-    "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
-    "categories": [
-      "Infrastructure",
-      "Staking",
-      "Community"
-    ],
-    "gridSize": [
-      1,
-      2
-    ],
-    "screenshots": 1,
-    "tags": [
-      "Network Stats",
-      "Validators",
-      "LYX"
-    ]
   },
   "deliquified-notes": {
     "name": "Notes: Take Notes Privately",
