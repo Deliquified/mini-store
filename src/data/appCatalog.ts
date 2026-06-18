@@ -9,6 +9,15 @@
 
 import appsManifest from "./apps.json";
 
+// A secondary, separately-addable Grid widget offered by an app (beyond its
+// primary `url`). Each renders as its own iframe widget on the user's Grid.
+interface AppWidgetManifestEntry {
+  name: string;
+  url: string;
+  gridSize: number[]; // [width, height]
+  description?: string;
+}
+
 // Shape of a single entry in apps.json
 interface AppManifestEntry {
   name: string;
@@ -22,6 +31,16 @@ interface AppManifestEntry {
   tags?: string[];
   featured?: boolean;
   featuredTitle?: string; // when present, the app appears in the featured hero
+  widgets?: AppWidgetManifestEntry[]; // extra widgets addable to the Grid
+}
+
+// A single addable Grid widget (the app's primary surface is its `url`; these
+// are additional ones an app can offer).
+export interface AppWidget {
+  name: string;
+  url: string;
+  gridSize: { width: number; height: number };
+  description?: string;
 }
 
 // App Types and Interfaces (unchanged — the rest of the app relies on this shape)
@@ -48,6 +67,7 @@ export interface App {
   tags?: string[];
   featured?: boolean;
   featuredTitle?: string;
+  widgets?: AppWidget[]; // extra widgets beyond the primary app surface
 }
 
 export interface FeaturedApp extends App {
@@ -93,8 +113,20 @@ function toApp(slug: string, entry: AppManifestEntry): App {
     tags: entry.tags,
     featured: entry.featured ?? false,
     featuredTitle: entry.featuredTitle,
+    widgets: (entry.widgets ?? []).map((w) => ({
+      name: w.name,
+      url: w.url,
+      gridSize: { width: w.gridSize?.[0] ?? 1, height: w.gridSize?.[1] ?? 1 },
+      description: w.description,
+    })),
   };
 }
+
+// Dedupe widgets by their iframe URL, preserving first-seen order.
+const dedupeWidgets = (widgets: AppWidget[]): AppWidget[] => {
+  const seen = new Set<string>();
+  return widgets.filter((w) => (seen.has(w.url) ? false : (seen.add(w.url), true)));
+};
 
 // All apps in the store (insertion order preserved from apps.json)
 const manifestApps: Record<string, App> = Object.fromEntries(
@@ -135,6 +167,10 @@ const mergeDuplicateApps = (canonical: App, duplicate: App): App => {
     ]),
     featured: canonical.featured || duplicate.featured,
     featuredTitle: canonical.featuredTitle ?? duplicate.featuredTitle,
+    widgets: dedupeWidgets([
+      ...(canonical.widgets ?? []),
+      ...(duplicate.widgets ?? []),
+    ]),
   };
 };
 

@@ -28,8 +28,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
 import { App } from "@/data/appCatalog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Wordmark } from "@/components/Wordmark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { client as apolloClient } from "@/app/components/apollo/apolloClient";
 import { useGrid } from "@/app/components/providers/gridProvider";
 import { useAppLaunch } from "@/hooks/useAppLaunch";
@@ -140,10 +143,13 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
     canInstallToGrid,
     openApp,
     handleInstall,
+    addToGrid,
     getAddToGridUrl,
+    isInstalled,
     isInstalling,
     showGridSelection,
     setShowGridSelection,
+    pendingWidget,
     handleGridSelect,
     handleGridSelectionCancel,
   } = useAppLaunch();
@@ -271,20 +277,31 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
         }`}
       />
 
-      {/* Sticky glass header with back button */}
+      {/* Sticky glass header — back affordance + store branding (logo/nav) */}
       <header className="glass-nav sticky top-0 z-30 pt-safe">
-        <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center px-4 sm:px-6">
-          <button
-            onClick={onBack}
-            className="-ml-2 inline-flex h-11 min-h-[44px] items-center gap-1.5 rounded-full px-3 text-sm font-medium text-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]"
-            aria-label="Go back to the store"
+        <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-2 px-4 sm:gap-3 sm:px-6">
+          {/* Brand anchored left, matching the store navbar */}
+          <Link
+            href="/"
+            aria-label="LUKSO UP!Store home"
+            className="flex min-w-0 items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ChevronLeft className="h-5 w-5" aria-hidden />
-            <span>Back</span>
-          </button>
-          <span className="ml-auto truncate pl-3 text-sm font-medium text-text-secondary">
-            {app.app.name}
-          </span>
+            <Wordmark />
+          </Link>
+
+          {/* Back + utilities on the right */}
+          <div className="ml-auto flex items-center gap-2 md:gap-3">
+            <button
+              onClick={onBack}
+              className="inline-flex h-11 min-h-[44px] items-center gap-1 rounded-full px-2.5 text-sm font-medium text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] sm:px-3"
+              aria-label="Go back to the store"
+              type="button"
+            >
+              <ChevronLeft className="h-5 w-5" aria-hidden />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -427,6 +444,80 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                 )}
               </div>
             </motion.section>
+
+            {/* ---- Widgets — extra surfaces addable to the Grid ---- */}
+            {app.widgets && app.widgets.length > 0 && (
+              <motion.section variants={fadeUp}>
+                <div className="mb-3">
+                  <h2 className="font-display text-lg font-semibold text-foreground">
+                    Widgets
+                  </h2>
+                  <p className="mt-0.5 text-sm text-text-secondary">
+                    Add any of {app.developer ? `${app.developer}'s` : "these"}{" "}
+                    widgets to your Grid.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {app.widgets.map((widget) => {
+                    const installed = isInstalled(app, widget);
+                    return (
+                      <div
+                        key={widget.url}
+                        className="flex flex-col rounded-lg border border-border bg-card p-4 shadow-rest"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">
+                            <LayoutGrid
+                              className="h-4 w-4 shrink-0 text-brand"
+                              aria-hidden
+                            />
+                            <span className="truncate">{widget.name}</span>
+                          </h3>
+                          <span
+                            className="chip shrink-0 tabular-nums"
+                            title="Grid footprint (columns × rows)"
+                          >
+                            {widget.gridSize.width}×{widget.gridSize.height}
+                          </span>
+                        </div>
+                        {widget.description && (
+                          <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-text-secondary">
+                            {widget.description}
+                          </p>
+                        )}
+                        <Button
+                          variant="glass-light"
+                          size="pill"
+                          className="mt-3 h-10 w-full text-sm font-medium text-brand-text"
+                          disabled={isInstalling || installed}
+                          aria-label={
+                            installed
+                              ? `${widget.name} already on your Grid`
+                              : `Add ${widget.name} to your Grid`
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToGrid(app, widget);
+                          }}
+                        >
+                          {installed ? (
+                            <>
+                              <BadgeCheck className="h-4 w-4" aria-hidden />
+                              <span>Added</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-4 w-4" aria-hidden />
+                              <span>Add to Grid</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.section>
+            )}
 
             {/* ---- Screenshots carousel ---- */}
             {hasScreenshots && (
@@ -727,7 +818,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
         open={showGridSelection}
         onOpenChange={setShowGridSelection}
         sections={sections}
-        appName={app.app.name}
+        appName={pendingWidget?.name ?? app.app.name}
         onGridSelect={handleGridSelect}
         onCancel={handleGridSelectionCancel}
       />

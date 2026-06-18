@@ -32,7 +32,27 @@
       1
     ],
     "screenshots": 2,
-    "featured": true
+    "featured": true,
+    "widgets": [
+      {
+        "name": "Liquid Staking",
+        "url": "https://app.stakingverse.io/liquid",
+        "gridSize": [1, 1],
+        "description": "Mint sLYX and earn auto-compounding staking rewards."
+      },
+      {
+        "name": "Network Stats",
+        "url": "https://app.stakingverse.io/network-stats",
+        "gridSize": [1, 2],
+        "description": "Live LUKSO validators, blocks and ecosystem health."
+      },
+      {
+        "name": "Token Swap",
+        "url": "https://app.stakingverse.io/swap",
+        "gridSize": [1, 1],
+        "description": "Swap between LYX and sLYX in a tap."
+      }
+    ]
   },
   "deliquified-roasted": {
     "name": "Roasted: Roast Profiles",

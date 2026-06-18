@@ -1,6 +1,14 @@
 import { apps, type App } from "@/data/appCatalog";
-import { getAddToGridUrl } from "@/lib/addToGrid";
+import { getAddToGridUrl, getWidgetAddToGridUrl } from "@/lib/addToGrid";
 import { absoluteUrl, siteUrl } from "@/lib/site";
+
+export interface SerializedWidget {
+  name: string;
+  url: string;
+  gridSize: { width: number; height: number };
+  description?: string;
+  addToGridUrl: string;
+}
 
 /**
  * A flat, machine-readable view of one store app — built for agents/LLMs and the
@@ -20,9 +28,30 @@ export interface SerializedApp {
   gridSize: { width: number; height: number };
   addToGridUrl: string;
   sourceCode?: string;
+  /** All addable widgets: the primary surface first, then any extra widgets. */
+  widgets: SerializedWidget[];
 }
 
 export function serializeApp(app: App): SerializedApp {
+  const widgets: SerializedWidget[] = [
+    {
+      name: app.app.name,
+      url: app.app.url,
+      gridSize: {
+        width: app.app.defaultGridSize.width,
+        height: app.app.defaultGridSize.height,
+      },
+      addToGridUrl: getAddToGridUrl(app),
+    },
+    ...(app.widgets ?? []).map((w) => ({
+      name: w.name,
+      url: w.url,
+      gridSize: w.gridSize,
+      description: w.description,
+      addToGridUrl: getWidgetAddToGridUrl(w),
+    })),
+  ];
+
   return {
     id: app.id ?? "",
     name: app.app.name,
@@ -43,6 +72,7 @@ export function serializeApp(app: App): SerializedApp {
     },
     addToGridUrl: getAddToGridUrl(app),
     sourceCode: app.app.sourceCode,
+    widgets,
   };
 }
 

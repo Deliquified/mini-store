@@ -16,7 +16,19 @@ export async function GET() {
   const appLines = apps
     .map((a) => {
       const cats = a.categories.length ? ` — ${a.categories.join(", ")}` : "";
-      return `- [${a.name}](${a.detailUrl})${cats}\n  - Open: ${a.appUrl}\n  - Add to Grid: ${a.addToGridUrl}`;
+      // a.widgets[0] is the primary surface (already shown as "Add to Grid");
+      // list any extra widgets the app offers.
+      const extras = a.widgets.slice(1);
+      const widgetLines = extras.length
+        ? "\n" +
+          extras
+            .map(
+              (w) =>
+                `  - Widget "${w.name}" (${w.gridSize.width}×${w.gridSize.height}): ${w.url} — Add to Grid: ${w.addToGridUrl}`
+            )
+            .join("\n")
+        : "";
+      return `- [${a.name}](${a.detailUrl})${cats}\n  - Open: ${a.appUrl}\n  - Add to Grid: ${a.addToGridUrl}${widgetLines}`;
     })
     .join("\n");
 

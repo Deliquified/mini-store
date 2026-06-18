@@ -3,8 +3,8 @@
 import { useCallback } from "react";
 import { useInstallApp } from "./useInstallApp";
 import { useUpProvider } from "@/app/components/providers/upProvider";
-import { App } from "@/data/appCatalog";
-import { getAddToGridUrl } from "@/lib/addToGrid";
+import { App, AppWidget } from "@/data/appCatalog";
+import { getAddToGridUrl, getWidgetAddToGridUrl } from "@/lib/addToGrid";
 import { trackOpen } from "@/lib/trackOpen";
 
 export type PrimaryActionKind = "open" | "install";
@@ -21,22 +21,26 @@ export interface UseAppLaunch {
   isInGridContext: boolean; // alias of canInstallToGrid for readability
   // actions
   openApp: (app: App) => void; // opens app.app.url in a new top-level tab
-  addToGrid: (app: App) => void; // direct write in-grid, else UE add-widget deep link
-  getAddToGridUrl: (app: App) => string; // the UE add-widget deep link (for anchors)
+  // Add a whole app (or one specific widget) to the Grid: direct write in-grid,
+  // else the UE add-widget deep link.
+  addToGrid: (app: App, widget?: AppWidget) => void;
+  getAddToGridUrl: (app: App) => string; // primary-surface add-widget deep link
+  getWidgetAddToGridUrl: (widget: AppWidget) => string; // per-widget deep link
   // resolver: single source of truth for "what is the primary button"
   getPrimaryAction: (app: App) => PrimaryAction;
   // secondary action: the other of Open / Add-to-Grid
   getSecondaryAction: (app: App) => PrimaryAction | null;
   // passthrough of the existing install flow (kept intact)
-  handleInstall: (app: App) => Promise<void>;
+  handleInstall: (app: App, widget?: AppWidget) => Promise<void>;
   handleUninstall: (app: App) => Promise<void>;
-  isInstalled: (app: App) => boolean;
+  isInstalled: (app: App, widget?: AppWidget) => boolean;
   isInstalling: boolean;
   isUninstalling: boolean;
   // GridSelectionDialog wiring (passed straight through from useInstallApp)
   showGridSelection: boolean;
   setShowGridSelection: (v: boolean) => void;
   pendingApp: App | null;
+  pendingWidget: AppWidget | null;
   handleGridSelect: (gridIndex: number) => void;
   handleGridSelectionCancel: () => void;
 }
@@ -63,14 +67,15 @@ export function useAppLaunch(): UseAppLaunch {
   // handles connect → choose Grid → add. So "Add to Grid" is no longer
   // gated to the in-Grid (mobile) context.
   const addToGrid = useCallback(
-    (app: App) => {
+    (app: App, widget?: AppWidget) => {
       if (canInstallToGrid) {
-        install.handleInstall(app);
+        install.handleInstall(app, widget);
         return;
       }
-      const url = app?.app?.url;
+      const url = widget?.url ?? app?.app?.url;
       if (!url) return;
-      window.open(getAddToGridUrl(app), "_blank", "noopener,noreferrer");
+      const deepLink = widget ? getWidgetAddToGridUrl(widget) : getAddToGridUrl(app);
+      window.open(deepLink, "_blank", "noopener,noreferrer");
     },
     [canInstallToGrid, install.handleInstall]
   );
@@ -97,6 +102,7 @@ export function useAppLaunch(): UseAppLaunch {
     openApp,
     addToGrid,
     getAddToGridUrl,
+    getWidgetAddToGridUrl,
     getPrimaryAction,
     getSecondaryAction,
     handleInstall: install.handleInstall,
@@ -107,6 +113,7 @@ export function useAppLaunch(): UseAppLaunch {
     showGridSelection: install.showGridSelection,
     setShowGridSelection: install.setShowGridSelection,
     pendingApp: install.pendingApp,
+    pendingWidget: install.pendingWidget,
     handleGridSelect: install.handleGridSelect,
     handleGridSelectionCancel: install.handleGridSelectionCancel,
   };
