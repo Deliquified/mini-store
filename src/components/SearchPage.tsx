@@ -369,7 +369,7 @@ function DirectoryAppRow({
               {app.categories.slice(0, 2).map((category) => (
                 <span
                   key={category}
-                  className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-text-secondary"
+                  className="whitespace-nowrap rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-medium leading-4 text-text-secondary"
                 >
                   {category}
                 </span>
