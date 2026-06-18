@@ -4,25 +4,28 @@ import { useCallback } from "react";
 import { useInstallApp } from "./useInstallApp";
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { App } from "@/data/appCatalog";
+import { getAddToGridUrl } from "@/lib/addToGrid";
 import { trackOpen } from "@/lib/trackOpen";
 
 export type PrimaryActionKind = "open" | "install";
 
 export interface PrimaryAction {
-  kind: PrimaryActionKind; // "install" only when canInstallToGrid
+  kind: PrimaryActionKind;
   label: string; // "Open" | "Add to Grid"
-  run: (app: App) => void; // openApp(app) or handleInstall(app)
+  run: (app: App) => void; // openApp(app) or addToGrid(app)
 }
 
 export interface UseAppLaunch {
   // context
-  canInstallToGrid: boolean; // walletConnected && isMiniApp
+  canInstallToGrid: boolean; // walletConnected && isMiniApp (direct write path)
   isInGridContext: boolean; // alias of canInstallToGrid for readability
   // actions
   openApp: (app: App) => void; // opens app.app.url in a new top-level tab
+  addToGrid: (app: App) => void; // direct write in-grid, else UE add-widget deep link
+  getAddToGridUrl: (app: App) => string; // the UE add-widget deep link (for anchors)
   // resolver: single source of truth for "what is the primary button"
   getPrimaryAction: (app: App) => PrimaryAction;
-  // secondary action (only meaningful in grid): Open shown beside Add-to-Grid
+  // secondary action: the other of Open / Add-to-Grid
   getSecondaryAction: (app: App) => PrimaryAction | null;
   // passthrough of the existing install flow (kept intact)
   handleInstall: (app: App) => Promise<void>;
@@ -54,30 +57,46 @@ export function useAppLaunch(): UseAppLaunch {
     window.open(url, "_blank", "noopener,noreferrer");
   }, []);
 
-  const getPrimaryAction = useCallback(
-    (_app: App): PrimaryAction => {
+  // Add-to-Grid works everywhere now. Inside the Grid we write LSP28TheGrid
+  // directly (the existing install flow). Anywhere else — including standalone
+  // desktop — we hand off to universaleverything.io's add-widget flow, which
+  // handles connect → choose Grid → add. So "Add to Grid" is no longer
+  // gated to the in-Grid (mobile) context.
+  const addToGrid = useCallback(
+    (app: App) => {
       if (canInstallToGrid) {
-        return { kind: "install", label: "Add to Grid", run: install.handleInstall };
+        install.handleInstall(app);
+        return;
       }
-      return { kind: "open", label: "Open", run: openApp };
+      const url = app?.app?.url;
+      if (!url) return;
+      window.open(getAddToGridUrl(app), "_blank", "noopener,noreferrer");
     },
-    [canInstallToGrid, install.handleInstall, openApp]
+    [canInstallToGrid, install.handleInstall]
+  );
+
+  // Add to Grid is the store's primary action on every surface; Open is the
+  // secondary. (The mechanism behind Add to Grid differs by context — see above.)
+  const getPrimaryAction = useCallback(
+    (_app: App): PrimaryAction => ({
+      kind: "install",
+      label: "Add to Grid",
+      run: addToGrid,
+    }),
+    [addToGrid]
   );
 
   const getSecondaryAction = useCallback(
-    (_app: App): PrimaryAction | null => {
-      if (canInstallToGrid) {
-        return { kind: "open", label: "Open", run: openApp };
-      }
-      return null;
-    },
-    [canInstallToGrid, openApp]
+    (_app: App): PrimaryAction => ({ kind: "open", label: "Open", run: openApp }),
+    [openApp]
   );
 
   return {
     canInstallToGrid,
     isInGridContext: canInstallToGrid,
     openApp,
+    addToGrid,
+    getAddToGridUrl,
     getPrimaryAction,
     getSecondaryAction,
     handleInstall: install.handleInstall,

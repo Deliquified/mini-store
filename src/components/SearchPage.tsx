@@ -74,13 +74,18 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("all");
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
-  // Honor a ?category= deep link (the discover-home "See all" rails). Read after
-  // mount so SSR/first render stays on "all" and hydration matches; only accept
-  // a value that exists in the taxonomy.
+  // Honor ?category= and ?q= deep links (the discover-home "See all" rails and
+  // agent/search-engine deep links). Read after mount so SSR/first render stays
+  // on defaults and hydration matches; only accept a category in the taxonomy.
   useEffect(() => {
-    const param = new URLSearchParams(window.location.search).get("category");
-    if (param && appCategories[param]) {
-      setSelectedCategory(param);
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get("category");
+    const query = params.get("q");
+    if (category && appCategories[category]) {
+      setSelectedCategory(category);
+    }
+    if (query) {
+      setSearchTerm(query);
     }
   }, []);
 

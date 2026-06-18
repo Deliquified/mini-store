@@ -140,6 +140,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
     canInstallToGrid,
     openApp,
     handleInstall,
+    getAddToGridUrl,
     isInstalling,
     showGridSelection,
     setShowGridSelection,
@@ -353,15 +354,28 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                 </div>
               </div>
 
-              {/* ---- Context-aware ACTION ---- */}
-              <div className="relative mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                {canInstallToGrid ? (
-                  <>
-                    {/* In the UP grid: Add to Grid (primary) + Open (secondary) */}
+              {/* ---- Context-aware ACTION — Add to Grid works everywhere ---- */}
+              <div className="relative mt-6 flex flex-col gap-2.5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button
+                    variant="glass-light"
+                    size="pill"
+                    className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openApp(app);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" aria-hidden />
+                    <span>Open App</span>
+                  </Button>
+
+                  {canInstallToGrid ? (
+                    /* In the UP grid: write LSP28TheGrid directly. */
                     <Button
-                      variant="glass-light"
+                      variant="ghost-outline"
                       size="pill"
-                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:flex-1"
+                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:min-w-[180px]"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleInstall(app);
@@ -370,10 +384,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                     >
                       {isInstalling ? (
                         <>
-                          <Loader2
-                            className="h-4 w-4 animate-spin"
-                            aria-hidden
-                          />
+                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                           <span>Adding…</span>
                         </>
                       ) : (
@@ -383,41 +394,36 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
                         </>
                       )}
                     </Button>
+                  ) : (
+                    /* Desktop / standalone: hand off to the universaleverything.io
+                       add-widget flow. A real anchor — crawlable and agent-readable. */
                     <Button
-                      variant="glass-light"
+                      asChild
+                      variant="ghost-outline"
                       size="pill"
-                      className="h-12 w-full text-sm font-medium sm:w-auto"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openApp(app);
-                      }}
+                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:min-w-[180px]"
                     >
-                      <ExternalLink className="h-4 w-4" aria-hidden />
-                      <span>Open</span>
+                      <a
+                        href={getAddToGridUrl(app)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Add ${app.app.name} to your Universal Profile Grid on universaleverything.io`}
+                      >
+                        <Plus className="h-4 w-4" aria-hidden />
+                        <span>Add to Grid</span>
+                      </a>
                     </Button>
-                  </>
-                ) : (
-                  <>
-                    {/* Outside the grid: Open / Launch is the primary action */}
-                    <Button
-                      variant="glass-light"
-                      size="pill"
-                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openApp(app);
-                      }}
-                    >
-                      <ExternalLink className="h-4 w-4" aria-hidden />
-                      <span>Open App</span>
-                    </Button>
-                    <p className="flex items-center gap-1.5 text-xs text-text-tertiary sm:max-w-[220px]">
-                      <LayoutGrid className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span>
-                        Add to Grid is available inside your Universal Profile.
-                      </span>
-                    </p>
-                  </>
+                  )}
+                </div>
+
+                {!canInstallToGrid && (
+                  <p className="flex items-center gap-1.5 text-xs text-text-tertiary">
+                    <LayoutGrid className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    <span>
+                      Add to Grid opens universaleverything.io to add this app to
+                      your Universal Profile — on desktop or mobile.
+                    </span>
+                  </p>
                 )}
               </div>
             </motion.section>
