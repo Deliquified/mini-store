@@ -402,7 +402,7 @@
     ]
   },
   "universal-everything-create-asset": {
-    "name": "Create Tokens: Launch LSP7 Assets",
+    "name": "Token Creator",
     "url": "https://universaleverything.io/create-asset",
     "developer": "Universal Everything",
     "publisher": "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
@@ -416,7 +416,7 @@
     ],
     "screenshots": 1,
     "tags": [
-      "Create Tokens",
+      "Token Creator",
       "LSP7",
       "Assets"
     ]
