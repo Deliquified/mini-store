@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import StoreDirectoryExperience from "@/components/StoreDirectoryExperience";
 import { apps } from "@/data/appCatalog";
+import { serializeApp } from "@/lib/catalog";
 
 interface StoreAppPageProps {
   params: Promise<{
@@ -49,10 +50,38 @@ export async function generateMetadata({
 
 export default async function StoreAppPage({ params }: StoreAppPageProps) {
   const { appId } = await params;
+  const app = apps[appId];
 
-  if (!apps[appId]) {
+  if (!app) {
     notFound();
   }
 
-  return <StoreDirectoryExperience initialAppId={appId} />;
+  // Per-app structured data so search engines and agents can read the app, its
+  // category, and the one-click add-to-grid (install) URL.
+  const data = serializeApp(app);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: data.name,
+    description: data.description,
+    applicationCategory: data.categories[0] ?? "Mini-App",
+    operatingSystem: "LUKSO Universal Profile (Web)",
+    url: data.detailUrl,
+    installUrl: data.addToGridUrl,
+    ...(data.iconUrl ? { image: data.iconUrl } : {}),
+    author: { "@type": "Organization", name: data.developer },
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    ...(data.sourceCode ? { softwareHelp: data.sourceCode } : {}),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <StoreDirectoryExperience initialAppId={appId} />
+    </>
+  );
 }

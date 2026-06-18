@@ -13,10 +13,8 @@ import {
   Globe,
   Landmark,
   Layers3,
-  Loader2,
   Music,
   Palette,
-  PlusCircle,
   Search,
   Shield,
   Shirt,
@@ -135,9 +133,8 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
   }, [allApps, browseApps, deferredSearchTerm, selectedCategory]);
 
   const {
-    getPrimaryAction,
-    isInstalling,
     pendingApp,
+    openApp,
     showGridSelection,
     setShowGridSelection,
     handleGridSelect,
@@ -237,9 +234,7 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
                 app={app}
                 index={index}
                 onAppClick={onAppClick}
-                getPrimaryAction={getPrimaryAction}
-                isInstalling={isInstalling}
-                pendingApp={pendingApp}
+                openApp={openApp}
               />
             ))}
           </ul>
@@ -313,23 +308,15 @@ interface DirectoryAppRowProps {
   app: App;
   index: number;
   onAppClick: (app: App) => void;
-  getPrimaryAction: ReturnType<typeof useAppLaunch>["getPrimaryAction"];
-  isInstalling: boolean;
-  pendingApp: App | null;
+  openApp: ReturnType<typeof useAppLaunch>["openApp"];
 }
 
 function DirectoryAppRow({
   app,
   index,
   onAppClick,
-  getPrimaryAction,
-  isInstalling,
-  pendingApp,
+  openApp,
 }: DirectoryAppRowProps) {
-  const action = getPrimaryAction(app);
-  const isBusy =
-    isInstalling &&
-    (pendingApp ? (pendingApp.id ?? pendingApp.app.name) === (app.id ?? app.app.name) : true);
   const developer = app.developer || app.publisherProfile;
 
   return (
@@ -385,31 +372,17 @@ function DirectoryAppRow({
 
         <Button
           type="button"
-          variant={action.kind === "install" ? "brand" : "ghost-outline"}
+          variant="ghost-outline"
           size="pill"
           className="h-10 min-h-10 w-10 shrink-0 px-0 text-[13px] sm:w-auto sm:px-3"
-          disabled={isBusy}
-          aria-label={`${action.label}: ${app.app.name}`}
+          aria-label={`Open: ${app.app.name}`}
           onClick={(event) => {
             event.stopPropagation();
-            action.run(app);
+            openApp(app);
           }}
         >
-          {isBusy ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span className="hidden sm:inline">Adding</span>
-            </>
-          ) : (
-            <>
-              {action.kind === "install" ? (
-                <PlusCircle className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              )}
-              <span className="hidden sm:inline">{action.label}</span>
-            </>
-          )}
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Open</span>
         </Button>
       </div>
     </li>
