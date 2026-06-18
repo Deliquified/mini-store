@@ -10,7 +10,6 @@ import { useProfile } from "@/app/components/providers/profileProvider";
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppDetailPage from "@/components/AppDetailPage";
-import LoadingSplash from "@/components/LoadingSplash";
 import SearchPage from "@/components/SearchPage";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Wordmark } from "@/components/Wordmark";
@@ -27,7 +26,6 @@ const getAppById = (appId?: string) => {
 
 export default function StoreDirectoryExperience({ initialAppId }: StoreDirectoryExperienceProps) {
   const router = useRouter();
-  const { isLoading } = useUpProvider();
   const [selectedApp, setSelectedApp] = useState<App | null>(() => getAppById(initialAppId));
 
   useEffect(() => {
@@ -54,7 +52,6 @@ export default function StoreDirectoryExperience({ initialAppId }: StoreDirector
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <LoadingSplash active={isLoading} />
       <StoreNavbar />
       <SearchPage onAppClick={handleAppClick} />
     </div>

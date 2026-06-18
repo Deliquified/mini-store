@@ -14,7 +14,6 @@ import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ExplorePage from "@/components/ExplorePage";
 import AppDetailPage from "@/components/AppDetailPage";
-import LoadingSplash from "@/components/LoadingSplash";
 import { App } from "@/data/appCatalog";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +36,7 @@ const STORE_LINK = { href: "/store", label: "Store" };
 
 export default function StoreExperience({ variant = "auto" }: StoreExperienceProps) {
   const router = useRouter();
-  const { walletConnected, isLoading } = useUpProvider();
+  const { walletConnected } = useUpProvider();
   const { profileData } = useProfile();
   const prefersReducedMotion = useReducedMotion();
 
@@ -87,8 +86,6 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
 
   return (
     <div className="relative flex min-h-[100dvh] w-full flex-col bg-background">
-      <LoadingSplash active={isLoading} />
-
       {/* Ambient brand glow anchored top-center */}
       <div
         aria-hidden="true"

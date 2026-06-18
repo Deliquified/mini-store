@@ -8,6 +8,7 @@ import { client } from '../apollo/apolloClient';
 import { ProfileProvider } from "./profileProvider";
 import { GridProvider } from "./gridProvider";
 import { ThemeProvider } from "./themeProvider";
+import LoadingSplash from "@/components/LoadingSplash";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -17,6 +18,10 @@ export function Providers({ children }: { children: ReactNode }) {
           <ProfileProvider>
             <GridProvider>
               <Toaster />
+              {/* Single, session-scoped splash. Mounted once here so it shows on
+                  the first view of the session but never on client-side page
+                  navigation. */}
+              <LoadingSplash />
               {children}
             </GridProvider>
           </ProfileProvider>
