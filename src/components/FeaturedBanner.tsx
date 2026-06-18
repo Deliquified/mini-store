@@ -102,7 +102,7 @@ export default function FeaturedBanner({
         opts={{ align: "start", loop: true }}
         setApi={setApi}
       >
-        <CarouselContent>
+        <CarouselContent className="items-stretch">
           {slides.map((app, index) => {
             const primary = getPrimaryAction(app);
             const category = getPrimaryCategory(app);
@@ -110,12 +110,15 @@ export default function FeaturedBanner({
               isInstalling && pendingApp?.id === app.id;
 
             return (
-              <CarouselItem key={app.id ?? index} className="basis-[88%] sm:basis-full">
+              <CarouselItem
+                key={app.id ?? index}
+                className="h-[29rem] basis-[88%] sm:h-96 sm:basis-full lg:h-[26rem]"
+              >
                 <motion.div
                   initial={reduceMotion ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="group relative isolate overflow-hidden rounded-xl"
+                  className="group relative isolate h-full overflow-hidden rounded-xl"
                 >
                   {/* Catalog art backdrop */}
                   <div className="absolute inset-0 -z-10">
@@ -153,7 +156,7 @@ export default function FeaturedBanner({
                     className="absolute inset-0 z-10 w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-inset"
                   />
 
-                  <div className="pointer-events-none relative z-20 flex min-h-[16rem] w-full flex-col justify-end gap-5 p-6 text-left sm:min-h-[18rem] sm:p-8">
+                  <div className="pointer-events-none relative z-20 flex h-full w-full flex-col justify-end gap-5 p-6 text-left sm:p-8">
                     {/* Eyebrow */}
                     <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-white backdrop-blur-sm">
                       <Sparkles className="h-3 w-3" aria-hidden="true" />
