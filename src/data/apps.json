@@ -7,6 +7,7 @@
     "publisher": "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
     "categories": [
       "DeFi",
+      "NFTs",
       "Infrastructure"
     ],
     "gridSize": [
@@ -85,7 +86,7 @@
     "developer": "Deliquified Labs",
     "publisher": "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
     "categories": [
-      "Social",
+      "Security",
       "Infrastructure"
     ],
     "gridSize": [
@@ -101,6 +102,7 @@
     "developer": "Universal Everything",
     "publisher": "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
     "categories": [
+      "Infrastructure",
       "Social",
       "Community"
     ],
@@ -116,6 +118,50 @@
       "Wallet"
     ]
   },
+  "openclaw": {
+    "name": "OpenClaw: Authorize AI Agents",
+    "url": "https://openclaw.universalprofile.cloud/",
+    "sourceCode": "https://github.com/emmet-bot/openclaw-universalprofile-skill",
+    "developer": "LUKSO Agent",
+    "publisher": "0x293E96ebbf264ed7715cff2b67850517De70232a",
+    "categories": [
+      "AI",
+      "Security",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "OpenClaw",
+      "AI Agents",
+      "Controller"
+    ]
+  },
+  "universal-profile-authorize": {
+    "name": "UP Authorize: Add Controllers",
+    "url": "https://authorize.universalprofile.cloud/",
+    "developer": "LUKSO Agent",
+    "publisher": "0x293E96ebbf264ed7715cff2b67850517De70232a",
+    "categories": [
+      "Security",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "Universal Profile",
+      "Authorize",
+      "Controller"
+    ]
+  },
   "universal-everything": {
     "name": "Universal Everything: Explore Profiles",
     "url": "https://universaleverything.io/",
@@ -124,6 +170,7 @@
     "publisher": "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
     "categories": [
       "Social",
+      "Infrastructure",
       "Community"
     ],
     "gridSize": [
@@ -229,7 +276,9 @@
     "publisher": "0xed64cb1062990e7fc2433443584a60989c0ae75d",
     "categories": [
       "Community",
-      "Infrastructure"
+      "Infrastructure",
+      "DeFi",
+      "NFTs"
     ],
     "gridSize": [
       1,
@@ -250,6 +299,7 @@
     "publisher": "0x700a452919208d57fdc886af56d23c9ce548d0c4",
     "categories": [
       "Community",
+      "NFTs",
       "Social"
     ],
     "gridSize": [
@@ -336,6 +386,7 @@
     "publisher": "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
     "categories": [
       "Community",
+      "DAOs",
       "Social"
     ],
     "gridSize": [
@@ -351,7 +402,7 @@
     ]
   },
   "universal-everything-create-asset": {
-    "name": "Create Tokens: Launch LSP7 Assets",
+    "name": "Token Creator",
     "url": "https://universaleverything.io/create-asset",
     "developer": "Universal Everything",
     "publisher": "0x0aa3dfcd57fad43e4fad2577fe7dde9395a0098e",
@@ -365,7 +416,7 @@
     ],
     "screenshots": 1,
     "tags": [
-      "Create Tokens",
+      "Token Creator",
       "LSP7",
       "Assets"
     ]
@@ -459,6 +510,7 @@
     "publisher": "0xec1c59E78De6f840A66b6EE8E4066700Be863529",
     "categories": [
       "AI",
+      "Infrastructure",
       "Community"
     ],
     "gridSize": [
