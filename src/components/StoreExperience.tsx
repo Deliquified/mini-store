@@ -12,6 +12,7 @@ import { useProfile } from "@/app/components/providers/profileProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import Footer from "@/components/Footer";
 import ExplorePage from "@/components/ExplorePage";
 import AppDetailPage from "@/components/AppDetailPage";
 import { App } from "@/data/appCatalog";
@@ -223,6 +224,9 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
           {renderContent()}
         </motion.div>
       </main>
+
+      {/* Footer — list/discover view only; the detail takeover keeps its own chrome. */}
+      {!selectedApp && <Footer />}
     </div>
   );
 }

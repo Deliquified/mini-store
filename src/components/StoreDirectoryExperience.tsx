@@ -11,6 +11,7 @@ import { useUpProvider } from "@/app/components/providers/upProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppDetailPage from "@/components/AppDetailPage";
 import SearchPage from "@/components/SearchPage";
+import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Wordmark } from "@/components/Wordmark";
 import { apps, type App } from "@/data/appCatalog";
@@ -51,9 +52,12 @@ export default function StoreDirectoryExperience({ initialAppId }: StoreDirector
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background">
+    <div className="flex min-h-[100dvh] flex-col bg-background">
       <StoreNavbar />
-      <SearchPage onAppClick={handleAppClick} />
+      <div className="flex-1">
+        <SearchPage onAppClick={handleAppClick} />
+      </div>
+      <Footer />
     </div>
   );
 }
