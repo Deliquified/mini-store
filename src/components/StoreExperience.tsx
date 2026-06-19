@@ -141,16 +141,6 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
               </Link>
             </nav>
 
-            {/* Mobile: compact Store link (desktop uses the nav above). Keeps
-                the directory one tap away without a second header row. */}
-            <Link
-              href={STORE_LINK.href}
-              aria-label={STORE_LINK.label}
-              className="btn-glass md:hidden"
-            >
-              <Store className="h-5 w-5" aria-hidden="true" />
-            </Link>
-
             <ThemeToggle />
 
             {/* Connection-aware slot */}
@@ -188,6 +178,37 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
           </div>
         </div>
 
+        {/* ---- Mobile Explore / Store segmented control ---- */}
+        <div className="border-t border-border px-4 py-2 md:hidden">
+          <div className="seg-track w-full">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const isActive = activeTab === t.id && !selectedApp;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleTabChange(t.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-[44px] flex-1 items-center justify-center gap-1.5",
+                    isActive ? "seg-active" : "seg-inactive"
+                  )}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {t.label}
+                </button>
+              );
+            })}
+            <Link
+              href={STORE_LINK.href}
+              className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
+            >
+              <Store className="h-4 w-4" aria-hidden="true" />
+              {STORE_LINK.label}
+            </Link>
+          </div>
+        </div>
       </header>
 
       {/* ---- Main content ---- */}
