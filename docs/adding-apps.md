@@ -4,6 +4,14 @@ Adding an app is **two steps**: drop in some images, add one JSON object.
 No TypeScript edits, no imports, no duplicated fields. An agent should be able to
 complete the task using only this file.
 
+> **How to contribute.** This catalog is community-maintained on GitHub. To add a
+> new app or change an existing one, fork
+> [`JordyDutch/mini-store`](https://github.com/JordyDutch/mini-store/), make the
+> edits described below, and **open a pull request**. Nothing changes in the live
+> store until a maintainer merges your PR — so it is safe to experiment. Want a
+> detail fixed but don't want to edit yourself? Open an issue or a PR describing
+> the change.
+
 ## Where things live
 
 - **Catalog data (the only file you edit):** `src/data/apps.json`
@@ -59,6 +67,44 @@ That's it. The slug in the JSON key must match the image folder name in `public/
 
 ---
 
+## Optional — offer extra Grid widgets
+
+An app's `url` is its **primary** Grid widget (what **Add to Grid** installs).
+If the app exposes more surfaces that users can add to their Grid as separate
+widgets (e.g. a stats panel, a swap box), list them under `widgets`:
+
+```jsonc
+"stakingverse-staking": {
+  "name": "Stakingverse: Stake Your LYX",
+  "url": "https://app.stakingverse.io/",
+  "developer": "Stakingverse",
+  "publisher": "0x900Be67854A47282211844BbdF5Cc0f332620513",
+  "categories": ["DeFi", "Staking"],
+  "gridSize": [1, 1],
+  "screenshots": 2,
+  "featured": true,
+  "widgets": [
+    {
+      "name": "Liquid Staking",                                    // required
+      "url": "https://app.stakingverse.io/liquid",                 // required — the widget's own URL
+      "gridSize": [1, 1],                                          // required — [width, height]
+      "description": "Mint sLYX and earn auto-compounding rewards." // optional
+    },
+    {
+      "name": "Network Stats",
+      "url": "https://app.stakingverse.io/network-stats",
+      "gridSize": [1, 2]
+    }
+  ]
+}
+```
+
+- Each widget needs `name`, `url`, and `gridSize` (`[width, height]`); `description` is optional.
+- These do **not** need their own images — they reuse the parent app's listing.
+- Widgets are de-duplicated by `url`, so listing the same URL twice is harmless.
+
+---
+
 ## Field reference
 
 | Field | Required? | Notes |
@@ -74,6 +120,7 @@ That's it. The slug in the JSON key must match the image folder name in `public/
 | `sourceCode` | optional | "View source" link |
 | `tags` | optional | Extra search keywords (array of strings) |
 | `featuredTitle` | optional | If present, the app appears in the home **hero carousel** with this title |
+| `widgets` | optional | Extra addable Grid widgets — array of `{ name, url, gridSize: [w,h], description? }` (see section above) |
 
 ---
 
@@ -101,6 +148,7 @@ Lending: { id: "Lending", name: "Lending", displayName: "Lending" },
 - **Invented category names.** Use the list above, or register the category first.
 - **Wrong `url`.** This is the real app users open — verify it loads.
 - **Invalid JSON.** No trailing commas, no comments in the actual file (the examples above use `//` only for explanation).
+- **Accidental merge.** Apps from the **same publisher** whose names share the part before the `:` (e.g. two `"Stakingverse: …"` entries) are collapsed into a **single** store listing, with their categories, tags and widgets combined. If you want two separate listings, give them distinct names; if they're variants of one app, prefer one entry plus `widgets`.
 
 ---
 
@@ -112,3 +160,8 @@ npm run build      # confirms it compiles and images resolve
 ```
 
 Both must pass. Don't use `npm run dev` for verification (it's a long-running server).
+
+Once they pass, commit your changes (the `apps.json` edit and the new
+`public/apps/<slug>/` images) and **open a pull request** against
+[`JordyDutch/mini-store`](https://github.com/JordyDutch/mini-store/). A
+maintainer reviews and merges it — that's when your app goes live in the store.
