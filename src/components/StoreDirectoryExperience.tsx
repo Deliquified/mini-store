@@ -10,6 +10,7 @@ import { useProfile } from "@/app/components/providers/profileProvider";
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppDetailPage from "@/components/AppDetailPage";
+import NavSwitch from "@/components/NavSwitch";
 import SearchPage from "@/components/SearchPage";
 import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -132,22 +133,7 @@ function StoreNavbar() {
       </div>
 
       <div className="border-t border-border px-4 py-2 md:hidden">
-        <div className="seg-track w-full">
-          <Link
-            href="/"
-            className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
-          >
-            <Compass className="h-4 w-4" aria-hidden="true" />
-            Explore
-          </Link>
-          <span
-            aria-current="page"
-            className="seg-active flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
-          >
-            <Search className="h-4 w-4" aria-hidden="true" />
-            Search
-          </span>
-        </div>
+        <NavSwitch active="search" />
       </div>
     </header>
   );

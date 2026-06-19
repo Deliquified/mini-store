@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Compass, Search } from "lucide-react";
+import { Compass } from "lucide-react";
 
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { useProfile } from "@/app/components/providers/profileProvider";
@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import Footer from "@/components/Footer";
+import NavSwitch from "@/components/NavSwitch";
 import ExplorePage from "@/components/ExplorePage";
 import AppDetailPage from "@/components/AppDetailPage";
 import { App } from "@/data/appCatalog";
@@ -179,36 +180,9 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
           </div>
         </div>
 
-        {/* ---- Mobile Explore / Store segmented control ---- */}
+        {/* ---- Mobile Explore / Search liquid-glass switch ---- */}
         <div className="border-t border-border px-4 py-2 md:hidden">
-          <div className="seg-track w-full">
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              const isActive = activeTab === t.id && !selectedApp;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleTabChange(t.id)}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex min-h-[44px] flex-1 items-center justify-center gap-1.5",
-                    isActive ? "seg-active" : "seg-inactive"
-                  )}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  {t.label}
-                </button>
-              );
-            })}
-            <Link
-              href={STORE_LINK.href}
-              className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
-            >
-              <Search className="h-4 w-4" aria-hidden="true" />
-              {STORE_LINK.label}
-            </Link>
-          </div>
+          <NavSwitch active="explore" onExplore={() => handleTabChange("explore")} />
         </div>
       </header>
 
