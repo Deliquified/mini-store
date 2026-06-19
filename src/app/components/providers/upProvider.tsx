@@ -18,10 +18,7 @@
  */
 "use client";
 
-import {
-  createClientUPProvider,
-  type UPClientProvider,
-} from "@lukso/up-provider";
+import type { UPClientProvider } from "@lukso/up-provider";
 import { createWalletClient, custom } from "viem";
 import { lukso, luksoTestnet } from "viem/chains";
 import {
@@ -59,22 +56,36 @@ interface UpProviderContext {
 
 const UpContext = createContext<UpProviderContext | undefined>(undefined);
 
+// Dev-only debug logger so diagnostics never ship to production.
+const debugLog = (...args: unknown[]) => {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(...args);
+  }
+};
+
 // Function to check if we're in a mini-app context (iframe)
 const isMiniAppContext = () => {
   try {
     const isInIframe = window.self !== window.top;
-    console.log('isMiniAppContext: window.self !== window.top:', isInIframe);
-    console.log('isMiniAppContext: window.self:', window.self);
-    console.log('isMiniAppContext: window.top:', window.top);
+    debugLog('isMiniAppContext: window.self !== window.top:', isInIframe);
+    debugLog('isMiniAppContext: window.self:', window.self);
+    debugLog('isMiniAppContext: window.top:', window.top);
     return isInIframe;
   } catch (e) {
-    console.log('isMiniAppContext: Error accessing window.top, assuming iframe context:', e);
+    debugLog('isMiniAppContext: Error accessing window.top, assuming iframe context:', e);
     return true;
   }
 };
 
-const provider =
-  typeof window !== "undefined" ? createClientUPProvider() : null;
+const silenceLitDevWarnings = () => {
+  const globalWithLitWarnings = globalThis as typeof globalThis & {
+    litIssuedWarnings?: Set<string>;
+  };
+
+  globalWithLitWarnings.litIssuedWarnings ??= new Set<string>();
+  globalWithLitWarnings.litIssuedWarnings.add("dev-mode");
+  globalWithLitWarnings.litIssuedWarnings.add("multiple-versions");
+};
 
 export function useUpProvider() {
   const context = useContext(UpContext);
@@ -97,25 +108,43 @@ export function UpProvider({ children }: UpProviderProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [isMiniApp, setIsMiniApp] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [provider, setProvider] = useState<UPClientProvider | null>(null);
   const [account] = accounts ?? [];
   const [contextAccount] = contextAccounts ?? [];
 
   // Handle client-side detection of iframe context
   useEffect(() => {
-    console.log('UpProvider: Initializing...');
+    let cancelled = false;
+
+    debugLog('UpProvider: Initializing...');
     const miniAppContext = isMiniAppContext();
-    console.log('UpProvider: isMiniAppContext result:', miniAppContext);
+    debugLog('UpProvider: isMiniAppContext result:', miniAppContext);
     setIsMiniApp(miniAppContext);
     setIsLoading(false);
-    console.log('UpProvider: Loading set to false');
+    debugLog('UpProvider: Loading set to false');
+
+    if (miniAppContext) {
+      silenceLitDevWarnings();
+
+      import("@lukso/up-provider")
+        .then(({ createClientUPProvider }) => {
+          if (!cancelled) {
+            setProvider(createClientUPProvider());
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to load Universal Profile provider:", error);
+        });
+    }
 
     // Fallback timeout to ensure loading doesn't get stuck
     const fallbackTimeout = setTimeout(() => {
-      console.log('UpProvider: Fallback timeout triggered, forcing loading to false');
+      debugLog('UpProvider: Fallback timeout triggered, forcing loading to false');
       setIsLoading(false);
     }, 3000); // 3 seconds timeout
 
     return () => {
+      cancelled = true;
       clearTimeout(fallbackTimeout);
     };
   }, []);
@@ -128,14 +157,14 @@ export function UpProvider({ children }: UpProviderProps) {
       });
     }
     return null;
-  }, [chainId]);
+  }, [chainId, provider]);
 
   useEffect(() => {
     let mounted = true;
 
     async function init() {
       try {
-        if (!client || !provider) return;
+        if (!provider) return;
 
         const _accounts = (await provider.request(
           "eth_accounts",
@@ -153,6 +182,9 @@ export function UpProvider({ children }: UpProviderProps) {
         setContextAccounts(_contextAccounts);
         setWalletConnected(_accounts[0] != null && _contextAccounts[0] != null);
       } catch (error) {
+        if (error instanceof Error && error.message.includes("No UP found")) {
+          return;
+        }
         console.error(error);
       }
     }
@@ -188,7 +220,7 @@ export function UpProvider({ children }: UpProviderProps) {
         provider.removeListener("chainChanged", chainChanged);
       };
     }
-  }, [client, account, contextAccount]);
+  }, [account, contextAccount, provider]);
 
   const data = useMemo(() => {
     return {
@@ -215,13 +247,12 @@ export function UpProvider({ children }: UpProviderProps) {
     isSearching,
     isMiniApp,
     isLoading,
+    provider,
   ]);
 
   return (
     <UpContext.Provider value={data}>
-      <div className="min-h-screen flex items-center justify-center">
-        {children}
-      </div>
+      <div className="min-h-[100dvh] w-full">{children}</div>
     </UpContext.Provider>
   );
 }

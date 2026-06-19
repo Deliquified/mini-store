@@ -19,12 +19,23 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        brand:
+          "rounded-full bg-brand text-primary-foreground shadow-cta ring-1 ring-inset ring-white/10 transition-all duration-200 hover:bg-brand-hover hover:-translate-y-px hover:shadow-cta-hover active:translate-y-0 active:scale-[0.98]",
+        gradient:
+          "rounded-full bg-brand-gradient-cta text-white shadow-cta ring-1 ring-inset ring-white/15 transition-all duration-200 hover:-translate-y-px hover:shadow-cta-hover hover:brightness-[1.04] active:translate-y-0 active:scale-[0.98]",
+        glass:
+          "rounded-full glass text-foreground hover:bg-muted active:scale-[0.98]",
+        "glass-light":
+          "rounded-full border border-white/65 bg-white/35 text-foreground shadow-glass backdrop-blur-xl ring-1 ring-inset ring-white/35 transition-all duration-200 hover:-translate-y-px hover:bg-white/55 hover:shadow-glass active:translate-y-0 active:scale-[0.98] dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15",
+        "ghost-outline":
+          "rounded-full border border-border-strong bg-transparent text-foreground hover:bg-muted active:scale-[0.98]",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
+        pill: "h-11 min-h-[44px] px-5",
       },
     },
     defaultVariants: {

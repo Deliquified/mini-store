@@ -1,66 +1,49 @@
-/*For now for simplicity we've apps locally in our data folder.
-In the future we will use a database and a backend to store and serve apps.*/
+/*
+ * App catalog.
+ *
+ * To ADD AN APP you only edit `apps.json` and drop images into
+ * `public/apps/<slug>/` — see docs/adding-apps.md. This file is just the loader
+ * that expands that plain data into the shape the UI consumes; you should not
+ * need to touch it when adding apps.
+ */
 
-// Defolio Multisend
-import defolioMultisend from "./icons/defolio-multisend/logo.webp";
-import defolioMultisendBanner from "./icons/defolio-multisend/banner.jpg";
-import defolioMultisendScreenshot1 from "./icons/defolio-multisend/image_1.png";
-import defolioMultisendScreenshot2 from "./icons/defolio-multisend/image_2.png";
-import defolioMultisendScreenshot3 from "./icons/defolio-multisend/image_3.png";
-import defolioMultisendScreenshot4 from "./icons/defolio-multisend/image_4.png";
-import defolioMultisendScreenshot5 from "./icons/defolio-multisend/image_5.png";
+import appsManifest from "./apps.json";
 
-// Stakingverse Staking
-import stakingverseStaking from "./icons/stakingverse-staking/logo.jpg"
-import stakingverseStakingBanner from "./icons/stakingverse-staking/banner.jpg"
-import stakingverseStakingScreenshot1 from "./icons/stakingverse-staking/image_1.png"
-import stakingverseStakingScreenshot2 from "./icons/stakingverse-staking/image_2.png"
+// A secondary, separately-addable Grid widget offered by an app (beyond its
+// primary `url`). Each renders as its own iframe widget on the user's Grid.
+interface AppWidgetManifestEntry {
+  name: string;
+  url: string;
+  gridSize: number[]; // [width, height]
+  description?: string;
+}
 
-// Deliquified Roasted
-import deliquifiedRoasted from "./icons/roasted/logo.png"
-import deliquifiedRoastedBanner from "./icons/roasted/banner.png"
-import deliquifiedRoastedScreenshot1 from "./icons/roasted/image_1.png"
-import deliquifiedRoastedScreenshot2 from "./icons/roasted/image_2.png"
-import deliquifiedRoastedScreenshot3 from "./icons/roasted/image_3.png"
-import deliquifiedRoastedScreenshot4 from "./icons/roasted/image_4.png"
-import deliquifiedRoastedScreenshot5 from "./icons/roasted/image_5.png"
-import deliquifiedRoastedScreenshot6 from "./icons/roasted/image_6.png"
+// Shape of a single entry in apps.json
+interface AppManifestEntry {
+  name: string;
+  url: string;
+  developer: string;
+  publisher: string;
+  categories: string[];
+  gridSize: number[]; // [width, height]
+  screenshots: number; // count of screenshot-N.png in public/apps/<slug>/
+  sourceCode?: string;
+  tags?: string[];
+  featured?: boolean;
+  featuredTitle?: string; // when present, the app appears in the featured hero
+  widgets?: AppWidgetManifestEntry[]; // extra widgets addable to the Grid
+}
 
-// Dracos
-import dracos from "./icons/aratta-labs-draco/logo.png"
-import dracosBanner from "./icons/aratta-labs-draco/banner.png"
-import dracosScreenshot1 from "./icons/aratta-labs-draco/image_1.png"
-import dracosScreenshot2 from "./icons/aratta-labs-draco/image_2.png"
+// A single addable Grid widget (the app's primary surface is its `url`; these
+// are additional ones an app can offer).
+export interface AppWidget {
+  name: string;
+  url: string;
+  gridSize: { width: number; height: number };
+  description?: string;
+}
 
-// Pigmint
-import pigmint from "./icons/aratta-labs-pigmint/logo.png"
-import pigmintBanner from "./icons/aratta-labs-pigmint/banner.png"
-import pigmintScreenshot1 from "./icons/aratta-labs-pigmint/image_1.png"
-import pigmintScreenshot2 from "./icons/aratta-labs-pigmint/image_2.png"
-import pigmintScreenshot3 from "./icons/aratta-labs-pigmint/image_3.png"
-
-// Stakingverse Holders
-import holders from "./icons/stakingverse-holders/logo.jpg"
-import holdersBanner from "./icons/stakingverse-holders/banner.jpg"
-import holdersScreenshot1 from "./icons/stakingverse-holders/image_1.png"
-
-// Stakingverse TVL
-import tvl from "./icons/stakingverse-tvl/logo.jpg"
-import tvlBanner from "./icons/stakingverse-tvl/banner.jpg"
-import tvlScreenshot1 from "./icons/stakingverse-tvl/image_1.png"
-
-// Stakingverse Dashboard
-import dashboard from "./icons/stakingverse-dashboard/logo.jpg"
-import dashboardBanner from "./icons/stakingverse-dashboard/banner.jpg"
-import dashboardScreenshot1 from "./icons/stakingverse-dashboard/image_1.png"
-
-// Notes
-import notes from "./icons/deliquified-notes/logo.png"
-import notesBanner from "./icons/deliquified-notes/background.png"
-import notesScreenshot1 from "./icons/deliquified-notes/image_1.png"
-import notesScreenshot2 from "./icons/deliquified-notes/image_2.png"
-
-// App Types and Interfaces
+// App Types and Interfaces (unchanged — the rest of the app relies on this shape)
 export interface App {
   categories: string[];
   publisherProfile: string;
@@ -75,14 +58,16 @@ export interface App {
     };
     previewImages: string[];
   };
-  
-  // Legacy fields for backward compatibility (will be removed later)
+
+  // Derived convenience fields used throughout the UI
   id?: string;
   icon?: string;
   banner?: string;
   developer?: string;
   tags?: string[];
   featured?: boolean;
+  featuredTitle?: string;
+  widgets?: AppWidget[]; // extra widgets beyond the primary app surface
 }
 
 export interface FeaturedApp extends App {
@@ -96,329 +81,155 @@ export interface Category {
   displayName: string;
 }
 
-// All apps in the store
-export const apps: Record<string, App> = {
-  "defolio-multisend": {
-    categories: ["DeFi", "Infrastructure"],
-    publisherProfile: "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
+const manifest = appsManifest as Record<string, AppManifestEntry>;
+
+// Build the public asset path for an app's image by folder convention.
+const assetBase = (slug: string) => `/apps/${slug}`;
+
+// Expand one manifest entry into the full App shape.
+function toApp(slug: string, entry: AppManifestEntry): App {
+  const base = assetBase(slug);
+  const [width, height] = entry.gridSize;
+  const previewImages = Array.from(
+    { length: Math.max(0, entry.screenshots) },
+    (_, i) => `${base}/screenshot-${i + 1}.png`
+  );
+
+  return {
+    categories: entry.categories,
+    publisherProfile: entry.publisher,
     app: {
-      profile: "0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5",
-      name: "Multisend: Send Tokens & NFTs",
-      url: "https://multisend-alpha.vercel.app/",
-      sourceCode: "https://github.com/deliquified/multisend",
-      defaultGridSize: {
-        width: 1,
-        height: 2
-      },
-      previewImages: [
-        defolioMultisendScreenshot1.src,
-        defolioMultisendScreenshot2.src,
-        defolioMultisendScreenshot3.src,
-        defolioMultisendScreenshot4.src,
-        defolioMultisendScreenshot5.src
-      ]
+      profile: entry.publisher,
+      name: entry.name,
+      url: entry.url,
+      sourceCode: entry.sourceCode,
+      defaultGridSize: { width, height },
+      previewImages,
     },
-    // Legacy fields
-    id: "defolio-multisend",
-    icon: defolioMultisend.src,
-    banner: defolioMultisendBanner.src,
-    developer: "Deliquified Labs",
-    featured: true
-  },
-  "stakingverse-staking": {
-    categories: ['DeFi', 'Staking'],
-    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    app: {
-      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-      name: "Stakingverse: Stake Your LYX",
-      url: 'https://app.stakingverse.io/staking-widget',
-      defaultGridSize: {
-        width: 1,
-        height: 1
-      },
-      previewImages: [
-        stakingverseStakingScreenshot1.src,
-        stakingverseStakingScreenshot2.src
-      ]
-    },
-    // Legacy fields
-    id: "stakingverse-staking",
-    icon: stakingverseStaking.src,
-    banner: stakingverseStakingBanner.src,
-    developer: 'Stakingverse',
-    featured: true
-  },
-  "deliquified-roasted": {
-    categories: ['Social'],
-    publisherProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
-    app: {
-      profile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
-      name: "Roasted: Roast Profiles",
-      url: 'https://roasted-green.vercel.app/',
-      defaultGridSize: {
-        width: 1,
-        height: 1
-      },
-      previewImages: [
-        deliquifiedRoastedScreenshot1.src,
-        deliquifiedRoastedScreenshot2.src,
-        deliquifiedRoastedScreenshot3.src,
-        deliquifiedRoastedScreenshot4.src,
-        deliquifiedRoastedScreenshot5.src,
-        deliquifiedRoastedScreenshot6.src
-      ]
-    },
-    // Legacy fields
-    id: "deliquified-roasted",
-    icon: deliquifiedRoasted.src,
-    banner: deliquifiedRoastedBanner.src,
-    developer: 'Deliquified Labs',
-    featured: true
-  },
-  "aratta-labs-draco": {
-    categories: ['NFTs'],
-    publisherProfile: '0x8A985fe01eA908F5697975332260553c454f8F77',
-    app: {
-      profile: '0x8A985fe01eA908F5697975332260553c454f8F77',
-      name: "Dracos: Swipe & Mint",
-      url: 'https://thunder-dracos.vercel.app',
-      defaultGridSize: {
-        width: 1,
-        height: 2
-      },
-      previewImages: [
-        dracosScreenshot1.src,
-        dracosScreenshot2.src,
-      ]
-    },
-    // Legacy fields
-    id: "aratta-labs-draco",
-    icon: dracos.src,
-    banner: dracosBanner.src,
-    developer: 'Aratta Labs',
-    featured: true
-  },
-  "aratta-labs-pigmint": {
-    categories: ['Social', "NFTs"],
-    publisherProfile: '0x544051588d6a0713e164196c16024fdcff877540',
-    app: {
-      profile: '0x544051588d6a0713e164196c16024fdcff877540',
-      name: "Pigmint: Mint Your Mood",
-      url: 'https://pigmint.vercel.app/',
-      defaultGridSize: {
-        width: 2,
-        height: 2
-      },
-      previewImages: [
-        pigmintScreenshot1.src,
-        pigmintScreenshot2.src,
-        pigmintScreenshot3.src,
-      ]
-    },
-    // Legacy fields
-    id: "aratta-labs-pigmint",
-    icon: pigmint.src,
-    banner: pigmintBanner.src,
-    developer: 'Aratta Labs',
-    featured: true
-  },
-  "stakingverse-holders": {
-    categories: ["DeFi", "Staking", "Community", "Social"],
-    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    app: {
-      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-      name: "Stakingverse: Holders",
-      url: 'https://app.stakingverse.io/holders-widget',
-      defaultGridSize: {
-        width: 1,
-        height: 2
-      },
-      previewImages: [
-        holdersScreenshot1.src,
-      ]
-    },
-    // Legacy fields
-    id: "stakingverse-holders",
-    icon: holders.src,
-    banner: holdersBanner.src,
-    developer: 'Stakingverse',
-    featured: true
-  },
-  "stakingverse-tvl": {
-    categories: ["DeFi", "Staking"],
-    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    app: {
-      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-      name: "Stakingverse: Track TVL",
-      url: 'https://stakingverse.io/tvl-widget',
-      defaultGridSize: {
-        width: 1,
-        height: 2
-      },
-      previewImages: [
-        tvlScreenshot1.src,
-      ]
-    },
-    // Legacy fields
-    id: "stakingverse-tvl",
-    icon: tvl.src,
-    banner: tvlBanner.src,
-    developer: 'Stakingverse',
-    featured: true
-  },
-  "stakingverse-dashboard": {
-    categories: ["DeFi", "Staking"],
-    publisherProfile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-    app: {
-      profile: '0x900Be67854A47282211844BbdF5Cc0f332620513',
-      name: "Stakingverse: Dashboard",
-      url: 'https://stakingverse.io/dashboard',
-      defaultGridSize: {
-        width: 1,
-        height: 2
-      },
-      previewImages: [
-        dashboardScreenshot1.src,
-      ]
-    },
-    // Legacy fields
-    id: "stakingverse-dashboard",
-    icon: dashboard.src,
-    banner: dashboardBanner.src,
-    developer: 'Stakingverse',
-    featured: true
-  },
-  "deliquified-notes": {
-    categories: ["Social", "Infrastructure"],
-    publisherProfile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
-    app: {
-      profile: '0x746a88d4bc09562e3f01bf4bd0ec91233f67e0d5',
-      name: "Notes: Take Notes Privately",
-      url: 'https://mini-notes-livid.vercel.app/',
-      defaultGridSize: {
-        width: 2,
-        height: 2
-      },
-      previewImages: [
-        notesScreenshot1.src,
-        notesScreenshot2.src,
-      ]
-    },
-    // Legacy fields
-    id: "deliquified-notes",
-    icon: notes.src,
-    banner: notesBanner.src,
-    developer: 'Deliquified Labs',
-    featured: true
-  },
+    id: slug,
+    icon: `${base}/logo.png`,
+    banner: `${base}/banner.png`,
+    developer: entry.developer,
+    tags: entry.tags,
+    featured: entry.featured ?? false,
+    featuredTitle: entry.featuredTitle,
+    widgets: (entry.widgets ?? []).map((w) => ({
+      name: w.name,
+      url: w.url,
+      gridSize: { width: w.gridSize?.[0] ?? 1, height: w.gridSize?.[1] ?? 1 },
+      description: w.description,
+    })),
+  };
+}
+
+// Dedupe widgets by their iframe URL, preserving first-seen order.
+const dedupeWidgets = (widgets: AppWidget[]): AppWidget[] => {
+  const seen = new Set<string>();
+  return widgets.filter((w) => (seen.has(w.url) ? false : (seen.add(w.url), true)));
 };
 
-// Categories definition
+// All apps in the store (insertion order preserved from apps.json)
+const manifestApps: Record<string, App> = Object.fromEntries(
+  Object.entries(manifest).map(([slug, entry]) => [slug, toApp(slug, entry)])
+);
+
+const uniqueValues = (values: Array<string | undefined>) =>
+  Array.from(new Set(values.filter(Boolean) as string[]));
+
+const normalizeKey = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/https?:\/\//, "")
+    .replace(/\/$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const getProductFamily = (app: App) => {
+  const [family] = app.app.name.split(":");
+  return family.trim() || app.app.name;
+};
+
+const getDeduplicationKey = (app: App) => {
+  const owner = app.publisherProfile || app.developer || "";
+  return `${normalizeKey(owner)}:${normalizeKey(getProductFamily(app))}`;
+};
+
+const mergeDuplicateApps = (canonical: App, duplicate: App): App => {
+  return {
+    ...canonical,
+    categories: uniqueValues([...canonical.categories, ...duplicate.categories]),
+    tags: uniqueValues([
+      ...(canonical.tags ?? []),
+      ...(duplicate.tags ?? []),
+      duplicate.app.name,
+      getProductFamily(duplicate),
+    ]),
+    featured: canonical.featured || duplicate.featured,
+    featuredTitle: canonical.featuredTitle ?? duplicate.featuredTitle,
+    widgets: dedupeWidgets([
+      ...(canonical.widgets ?? []),
+      ...(duplicate.widgets ?? []),
+    ]),
+  };
+};
+
+// Public app list with product-family duplicates collapsed. This keeps variants
+// like several "Stakingverse: ..." widgets from showing as separate store apps.
+export const apps: Record<string, App> = Object.fromEntries(
+  Object.entries(manifestApps).reduce<Array<[string, App]>>((deduped, [slug, app]) => {
+    const key = getDeduplicationKey(app);
+    const existingIndex = deduped.findIndex(([, existingApp]) => {
+      return getDeduplicationKey(existingApp) === key;
+    });
+
+    if (existingIndex === -1) {
+      deduped.push([slug, app]);
+      return deduped;
+    }
+
+    const [existingSlug, existingApp] = deduped[existingIndex];
+    deduped[existingIndex] = [existingSlug, mergeDuplicateApps(existingApp, app)];
+    return deduped;
+  }, [])
+);
+
+// Categories definition (taxonomy — edit here to add a new category)
 export const categories: Record<string, Category> = {
-  "Art": {
-    id: "Art",
-    name: "Art",
-    displayName: "Art"
-  },
-  "AI": {
-    id: "AI",
-    name: "AI",
-    displayName: "AI"
-  },
-  "Brands": {
-    id: "Brands",
-    name: "Brands",
-    displayName: "Brands"
-  },
-  "Community": {
-    id: "Community",
-    name: "Community",
-    displayName: "Community"
-  },
-  "DAOs": {
-    id: "DAOs",
-    name: "DAOs",
-    displayName: "DAOs"
-  },
-  "DeFi": {
-    id: "DeFi",
-    name: "DeFi",
-    displayName: "DeFi"
-  },
-  "Exchanges": {
-    id: "Exchanges",
-    name: "Exchanges",
-    displayName: "Exchanges"
-  },
-  "Fashion": {
-    id: "Fashion",
-    name: "Fashion",
-    displayName: "Fashion"
-  },
-  "Gaming": {
-    id: "Gaming",
-    name: "Gaming",
-    displayName: "Gaming"
-  },
-  "Infrastructure": {
-    id: "Infrastructure",
-    name: "Infrastructure",
-    displayName: "Infrastructure"
-  },
-  "Marketplaces": {
-    id: "Marketplaces",
-    name: "Marketplaces",
-    displayName: "Marketplaces"
-  },
-  "Music": {
-    id: "Music",
-    name: "Music",
-    displayName: "Music"
-  },
-  "NFTs": {
-    id: "NFTs",
-    name: "NFTs",
-    displayName: "NFTs"
-  },
-  "Security": {
-    id: "Security",
-    name: "Security",
-    displayName: "Security"
-  },
-  "Social": {
-    id: "Social",
-    name: "Social",
-    displayName: "Social"
-  },
-  "Staking": {
-    id: "Staking",
-    name: "Staking",
-    displayName: "Staking"
-  }
+  Art: { id: "Art", name: "Art", displayName: "Art" },
+  AI: { id: "AI", name: "AI", displayName: "AI" },
+  Brands: { id: "Brands", name: "Brands", displayName: "Brands" },
+  Community: { id: "Community", name: "Community", displayName: "Community" },
+  DAOs: { id: "DAOs", name: "DAOs", displayName: "DAOs" },
+  DeFi: { id: "DeFi", name: "DeFi", displayName: "DeFi" },
+  Exchanges: { id: "Exchanges", name: "Exchanges", displayName: "Exchanges" },
+  Fashion: { id: "Fashion", name: "Fashion", displayName: "Fashion" },
+  Gaming: { id: "Gaming", name: "Gaming", displayName: "Gaming" },
+  Infrastructure: { id: "Infrastructure", name: "Infrastructure", displayName: "Infrastructure" },
+  Marketplaces: { id: "Marketplaces", name: "Marketplaces", displayName: "Marketplaces" },
+  Music: { id: "Music", name: "Music", displayName: "Music" },
+  NFTs: { id: "NFTs", name: "NFTs", displayName: "NFTs" },
+  Security: { id: "Security", name: "Security", displayName: "Security" },
+  Social: { id: "Social", name: "Social", displayName: "Social" },
+  Staking: { id: "Staking", name: "Staking", displayName: "Staking" },
 };
 
-// Featured apps
-export const featuredApps: FeaturedApp[] = [
-  {
-    ...apps["defolio-multisend"],
-    title: "Send Tokens & NFTs",
-    banner: apps["defolio-multisend"].banner || ""
-  }
-];
+// Featured apps (hero carousel) — any featured app can rotate into the hero.
+// `featuredTitle` is an optional editorial override; otherwise use app name.
+export const featuredApps: FeaturedApp[] = Object.values(apps)
+  .filter((app) => app.featured || app.featuredTitle)
+  .map((app) => ({
+    ...app,
+    title: app.featuredTitle || app.app.name,
+    banner: app.banner || "",
+  }));
 
 // Sample categories for display
-export const sampleCategories = [
-  "Social",
-  "AI",
-  "Gaming",
-  "DeFi",
-  "NFTs"
-];
+export const sampleCategories = ["Social", "AI", "Gaming", "DeFi", "NFTs"];
 
 // Helper functions to retrieve data
 export const getAppsByCategory = (categoryId: string): App[] => {
-  // Return all apps that have this category in their categories array
-  return Object.values(apps).filter(app => app.categories.includes(categoryId));
+  return Object.values(apps).filter((app) => app.categories.includes(categoryId));
 };
 
 // Get the primary category (first in the array) of an app
@@ -431,5 +242,28 @@ export const getFeaturedApps = (): FeaturedApp[] => {
 };
 
 export const getTopCategories = (): Category[] => {
-  return sampleCategories.map(id => categories[id]).filter(Boolean);
+  return sampleCategories.map((id) => categories[id]).filter(Boolean);
 };
+
+// Fisher–Yates shuffle — returns a new array, leaves the input untouched.
+// Used to randomize the store rails on each reload (see useHydrated()).
+export const shuffle = <T>(items: readonly T[]): T[] => {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+
+// Order apps by global open count (most-opened first). The sort is stable, so
+// apps with equal counts — notably everything at 0 — keep their incoming order
+// (e.g. the per-reload shuffle), which is what powers the popularity-ranked
+// Trending section without flattening discovery for un-opened apps.
+export const sortByOpenCount = <T extends { id?: string }>(
+  items: readonly T[],
+  counts: Record<string, number>
+): T[] =>
+  [...items].sort(
+    (a, b) => (counts[b.id ?? ""] ?? 0) - (counts[a.id ?? ""] ?? 0)
+  );

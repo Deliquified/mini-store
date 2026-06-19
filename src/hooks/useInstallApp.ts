@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useGrid } from '@/app/components/providers/gridProvider';
 import { toast } from 'sonner';
-import { ERC725 } from '@erc725/erc725.js';
 import { useUpProvider } from '@/app/components/providers/upProvider';
 import { createPublicClient, http } from 'viem';
 import { lukso } from 'viem/chains';
-import { App } from "@/data/appCatalog";
+import { App, AppWidget } from "@/data/appCatalog";
 import { uploadMetadataToIPFS } from './uploadMetadata';
 
 export function useInstallApp() {
@@ -15,17 +14,28 @@ export function useInstallApp() {
   const [isUninstalling, setIsUninstalling] = useState(false);
   const [showGridSelection, setShowGridSelection] = useState(false);
   const [pendingApp, setPendingApp] = useState<App | null>(null);
+  // The specific widget chosen for install (null = the app's primary surface).
+  const [pendingWidget, setPendingWidget] = useState<AppWidget | null>(null);
 
-  const checkIfInstalled = (app: App) => {
-    return sections.some(section => 
-      section.grid.some(item => 
-        item.type === 'IFRAME' && 
-        item.properties.src === app.app.url
+  // Resolve the install target — a specific widget when given, else the app's
+  // primary url / name / grid footprint.
+  const targetUrl = (app: App, widget?: AppWidget | null) => widget?.url ?? app.app.url;
+  const targetName = (app: App, widget?: AppWidget | null) =>
+    widget?.name ?? app.app.name;
+  const targetSize = (app: App, widget?: AppWidget | null) =>
+    widget?.gridSize ?? app.app.defaultGridSize;
+
+  const checkIfInstalled = (app: App, widget?: AppWidget | null) => {
+    const url = targetUrl(app, widget);
+    return sections.some(section =>
+      section.grid.some(item =>
+        item.type === 'IFRAME' &&
+        item.properties.src === url
       )
     );
   };
 
-  const handleInstall = async (app: App) => {
+  const handleInstall = async (app: App, widget: AppWidget | null = null) => {
     // Check if user is connected
     if (!accounts || accounts.length === 0 || !upClient) {
       toast("Connect your Universal Profile to install apps", {
@@ -40,8 +50,8 @@ export function useInstallApp() {
       return;
     }
 
-    if (checkIfInstalled(app)) {
-      toast(`${app.app.name} is already installed`, {
+    if (checkIfInstalled(app, widget)) {
+      toast(`${targetName(app, widget)} is already installed`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -55,23 +65,32 @@ export function useInstallApp() {
 
     // Show grid selection dialog
     setPendingApp(app);
+    setPendingWidget(widget);
     setShowGridSelection(true);
   };
 
-  const installToGrid = async (app: App, gridIndex: number) => {
+  const installToGrid = async (
+    app: App,
+    gridIndex: number,
+    widget: AppWidget | null = null
+  ) => {
     setIsInstalling(true);
+
+    const url = targetUrl(app, widget);
+    const name = targetName(app, widget);
+    const size = targetSize(app, widget);
 
     try {
       // Create a copy of the current sections
       const updatedSections = [...sections];
 
-      // Create the new grid item for the app
+      // Create the new grid item for the app (or chosen widget)
       const newGridItem = {
         type: 'IFRAME',
-        width: app.app.defaultGridSize.width,
-        height: app.app.defaultGridSize.height,
+        width: size.width,
+        height: size.height,
         properties: {
-          src: app.app.url
+          src: url
         }
       };
 
@@ -95,6 +114,7 @@ export function useInstallApp() {
         valueContent: 'VerifiableURI'
       }];
 
+      const { ERC725 } = await import('@erc725/erc725.js');
       const erc725 = new ERC725(schema);
 
       // Encode metadata
@@ -131,7 +151,7 @@ export function useInstallApp() {
       // Update UI immediately after transaction is submitted
       setSections(updatedSections);
 
-      toast(`${app.app.name} installed successfully`, {
+      toast(`${name} installed successfully`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -146,8 +166,8 @@ export function useInstallApp() {
         chain: lukso,
         transport: http(),
       });
-      
-      publicClient.waitForTransactionReceipt({ 
+
+      publicClient.waitForTransactionReceipt({
         hash: txHash as `0x${string}`
       }).then(receipt => {
         if (!receipt) {
@@ -159,7 +179,7 @@ export function useInstallApp() {
 
     } catch (error) {
       console.error("Error installing app:", error);
-      toast(`Failed to install ${app.app.name}`, {
+      toast(`Failed to install ${name}`, {
         duration: 3000,
         position: "bottom-center",
         style: {
@@ -175,14 +195,16 @@ export function useInstallApp() {
 
   const handleGridSelect = (gridIndex: number) => {
     if (pendingApp) {
-      installToGrid(pendingApp, gridIndex);
+      installToGrid(pendingApp, gridIndex, pendingWidget);
       setPendingApp(null);
+      setPendingWidget(null);
     }
     setShowGridSelection(false);
   };
 
   const handleGridSelectionCancel = () => {
     setPendingApp(null);
+    setPendingWidget(null);
     setShowGridSelection(false);
   };
 
@@ -233,6 +255,7 @@ export function useInstallApp() {
         valueContent: 'VerifiableURI'
       }];
 
+      const { ERC725 } = await import('@erc725/erc725.js');
       const erc725 = new ERC725(schema);
 
       // Encode metadata
@@ -320,7 +343,8 @@ export function useInstallApp() {
     showGridSelection,
     setShowGridSelection,
     pendingApp,
+    pendingWidget,
     handleGridSelect,
     handleGridSelectionCancel
   };
-} 
+}

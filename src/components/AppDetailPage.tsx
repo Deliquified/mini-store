@@ -1,35 +1,56 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ChevronLeft, Share, Bookmark, Info, ChevronRight, X, ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import {
+  ChevronLeft,
+  X,
+  ArrowLeft,
+  ArrowRight,
+  ExternalLink,
+  Plus,
+  Loader2,
+  BadgeCheck,
+  Code2,
+  LayoutGrid,
+} from "lucide-react";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  type Variants,
+} from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import Link from "next/link";
 import { App } from "@/data/appCatalog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { useQuery, gql } from "@apollo/client";
+import { Wordmark } from "@/components/Wordmark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { client as apolloClient } from "@/app/components/apollo/apolloClient";
-import { useGrid } from '@/app/components/providers/gridProvider';
-import { toast } from 'sonner';
-import { ERC725 } from '@erc725/erc725.js';
-import { useUpProvider } from '@/app/components/providers/upProvider';
-import { createPublicClient, http } from 'viem';
-import { lukso } from 'viem/chains';
-import { useInstallApp } from "@/hooks/useInstallApp";
+import { useGrid } from "@/app/components/providers/gridProvider";
+import { useAppLaunch } from "@/hooks/useAppLaunch";
 import { GET_UNIVERSAL_PROFILE } from "@/app/components/apollo/query";
 import GridSelectionDialog from "./GridSelectionDialog";
 
 // Helper function to convert IPFS URL to HTTP URL
 const convertIpfsUrl = (url: string): string => {
   if (!url) return "";
-  
+
   // Check if it's an IPFS URL
-  if (url.startsWith('ipfs://')) {
+  if (url.startsWith("ipfs://")) {
     // Extract the CID (content identifier)
-    const cid = url.replace('ipfs://', '');
+    const cid = url.replace("ipfs://", "");
     // Return the gateway URL
     return `https://api.universalprofile.cloud/ipfs/${cid}`;
   }
-  
+
   return url;
 };
 
@@ -106,30 +127,39 @@ interface AppDetailPageProps {
   onBack: () => void;
 }
 
+// ---- Motion tokens (gated on prefers-reduced-motion via hook) ----
+const EASE_ENTRANCE = [0.22, 1, 0.36, 1] as const;
+
 export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
-  const { sections, setSections } = useGrid();
-  const { accounts, client: upClient } = useUpProvider();
+  const reduceMotion = useReducedMotion();
+  const { sections } = useGrid();
   const [openImageViewer, setOpenImageViewer] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [publisherData, setPublisherData] = useState<UniversalProfileDetails | null>(null);
+  const [publisherData, setPublisherData] =
+    useState<UniversalProfileDetails | null>(null);
   const [isLoadingPublisher, setIsLoadingPublisher] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const { 
-    handleInstall, 
-    handleUninstall, 
-    isInstalling, 
-    isUninstalling, 
+
+  const {
+    canInstallToGrid,
+    openApp,
+    handleInstall,
+    addToGrid,
+    getAddToGridUrl,
     isInstalled,
+    isInstalling,
     showGridSelection,
     setShowGridSelection,
-    pendingApp,
+    pendingWidget,
     handleGridSelect,
-    handleGridSelectionCancel
-  } = useInstallApp();
+    handleGridSelectionCancel,
+  } = useAppLaunch();
+
+  const previewImages = app.app.previewImages ?? [];
+  const hasScreenshots = previewImages.length > 0;
 
   useEffect(() => {
     // Fetch profile data if universal profile is available
-    if (app.publisherProfile && typeof app.publisherProfile === 'string') {
+    if (app.publisherProfile && typeof app.publisherProfile === "string") {
       fetchProfileData(app.publisherProfile);
     }
   }, [app]);
@@ -139,9 +169,9 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
     try {
       const { data } = await apolloClient.query<GetUniversalProfileResponse>({
         query: GET_UNIVERSAL_PROFILE,
-        variables: { profileAddress: profileId }
+        variables: { profileAddress: profileId },
       });
-      
+
       if (data && data.Profile && data.Profile.length > 0) {
         const profile = data.Profile[0];
         // Convert IPFS URLs in profile data
@@ -149,12 +179,14 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
           ...profile,
           profileImages: profile.profileImages?.map((img: ProfileImage) => ({
             ...img,
-            url: convertIpfsUrl(img.url)
+            url: convertIpfsUrl(img.url),
           })),
-          backgroundImages: profile.backgroundImages?.map((img: BackgroundImage) => ({
-            ...img,
-            url: convertIpfsUrl(img.url)
-          }))
+          backgroundImages: profile.backgroundImages?.map(
+            (img: BackgroundImage) => ({
+              ...img,
+              url: convertIpfsUrl(img.url),
+            })
+          ),
         };
         setPublisherData(processedProfile);
       }
@@ -175,20 +207,24 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
   };
 
   const goToPreviousImage = () => {
-    if (!app?.app.previewImages) return;
-    setCurrentImageIndex((prev) => (prev === 0 ? app.app.previewImages.length - 1 : prev - 1));
+    if (!hasScreenshots) return;
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? previewImages.length - 1 : prev - 1
+    );
   };
 
   const goToNextImage = () => {
-    if (!app?.app.previewImages) return;
-    setCurrentImageIndex((prev) => (prev === app.app.previewImages.length - 1 ? 0 : prev + 1));
+    if (!hasScreenshots) return;
+    setCurrentImageIndex((prev) =>
+      prev === previewImages.length - 1 ? 0 : prev + 1
+    );
   };
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation (preserved)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!openImageViewer) return;
-      
+
       if (e.key === "Escape") {
         closeLightbox();
       } else if (e.key === "ArrowLeft") {
@@ -202,287 +238,590 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [openImageViewer, app]);
 
+  // ---- Motion helpers ----
+  const fadeUp: Variants = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 12 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.42, ease: EASE_ENTRANCE },
+    },
+  };
+
+  const staggerParent: Variants = {
+    hidden: {},
+    show: {
+      transition: { staggerChildren: reduceMotion ? 0 : 0.06 },
+    },
+  };
+
+  const publisherName = publisherData?.name || app?.developer || "Publisher";
+  const publisherAvatar =
+    publisherData?.profileImages && publisherData.profileImages.length > 0
+      ? publisherData.profileImages[0].url
+      : app?.icon || "";
+
+  const description = publisherData?.description?.trim()
+    ? publisherData.description
+    : app.developer
+    ? `${app.app.name} is built and maintained by ${app.developer}. Launch it to explore everything it offers inside your Universal Profile ecosystem.`
+    : "No description available yet for this app.";
+
   return (
-    <div className="flex flex-col w-full min-h-screen bg-background">
-      {/* Header with back button */}
-      <header className="sticky top-0 z-10 bg-background flex items-center border-b border-gray-200">
-        <button 
-          onClick={onBack}
-          className="py-1 rounded-full flex items-center gap-2"
-        >
-          <ChevronLeft className="w-6 h-6" />
-          <span className="text-lg font-roboto">Back</span>
-        </button>
+    <div className="relative flex w-full flex-col bg-background text-foreground">
+      {/* Ambient brand glow behind the hero (decorative) */}
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-x-0 top-0 z-0 h-[420px] bg-glow-ambient ${
+          reduceMotion ? "" : "animate-glow-drift"
+        }`}
+      />
+
+      {/* Sticky glass header — back affordance + store branding (logo/nav) */}
+      <header className="glass-nav sticky top-0 z-30 pt-safe">
+        <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-2 px-4 sm:gap-3 sm:px-6">
+          {/* Brand anchored left, matching the store navbar */}
+          <Link
+            href="/"
+            aria-label="LUKSO UP!Store home"
+            className="flex min-w-0 items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Wordmark />
+          </Link>
+
+          {/* Back + utilities on the right */}
+          <div className="ml-auto flex items-center gap-2 md:gap-3">
+            <button
+              onClick={onBack}
+              className="inline-flex h-11 min-h-[44px] items-center gap-1 rounded-full px-2.5 text-sm font-medium text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] sm:px-3"
+              aria-label="Go back to the store"
+              type="button"
+            >
+              <ChevronLeft className="h-5 w-5" aria-hidden />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <ThemeToggle />
+          </div>
+        </div>
       </header>
 
-      <main className="flex-1 pb-10">
-        {/* App Header Section */}
-        <div className="pt-4 flex">
-          <div className="relative h-20 w-20 rounded-xl overflow-hidden mr-4">
-            <Image 
-              src={app.icon || ""} 
-              alt={app.app.name}
-              fill
-              quality={95}
-              className="object-contain"
-            />
-          </div>
-          
-          <div className="flex-1">
-            <h1 className="text-xl font-bold font-roboto mb-1">{app.app.name}</h1>
-            <p className="text-sm text-blue-600 mb-1">{app.developer}</p>
-          </div>
-        </div>
-
-        {/* Downloads & Size Info 
-        <div className="flex mb-4">
-          {app.downloads && (
-            <div className="mr-6">
-              <p className="font-medium text-center">{app.downloads}</p>
-              <p className="text-xs text-gray-600">Downloads</p>
-            </div>
-          )}
-        </div>*/}
-
-        {/* Install/Uninstall Button */}
-        <div className="my-4">
-          <Button 
-            className={`w-full h-10 rounded-md relative disabled:opacity-50 ${
-              isInstalled(app) 
-                ? 'bg-white text-blue-600 border border-gray-200 hover:bg-gray-50' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isInstalled(app)) {
-                handleUninstall(app);
-              } else {
-                handleInstall(app);
-              }
-            }}
-            disabled={isInstalling || isUninstalling}
-          >
-            {isInstalling || isUninstalling ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${
-                  isInstalled(app) ? 'border-blue-600' : 'border-white'
-                }`} />
-                <span>{isUninstalling ? "Uninstalling..." : "Installing..."}</span>
-              </div>
-            ) : (
-              isInstalled(app) ? "Uninstall" : "Install"
-            )}
-          </Button>
-        </div>
-
-        {/* Screenshots Carousel */}
-        {app.app.previewImages && app.app.previewImages.length > 0 && (
-          <div className="mt-6 mb-2">
-            <Carousel 
-              opts={{
-                align: "start",
-                loop: false,
-                skipSnaps: false,
-                containScroll: "trimSnaps"
-              }}
-              className="w-full mb-4"
+      <motion.main
+        variants={staggerParent}
+        initial="hidden"
+        animate="show"
+        className="relative z-10 mx-auto w-full max-w-[1200px] flex-1 px-4 pb-safe-content pt-6 sm:px-6 sm:pt-8"
+      >
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
+          {/* ============ LEFT / MAIN COLUMN ============ */}
+          <div className="flex min-w-0 flex-col gap-6">
+            {/* ---- App header hero (glass-tinted) ---- */}
+            <motion.section
+              variants={fadeUp}
+              className="glass relative overflow-hidden rounded-[1.75rem] p-5 sm:p-7"
             >
-              <CarouselContent className="pt-1 -ml-4 flex flex-row">
-                {app.app.previewImages.map((image, index) => (
-                  <CarouselItem key={index} className="pl-4 basis-[140px] h-[200px] shrink-0">
-                    <div 
-                      className="relative h-full w-[120px] overflow-hidden rounded-xl cursor-pointer border border-gray-200"
-                      onClick={() => openLightbox(index)}
-                    >
-                      <Image 
-                        src={image} 
-                        alt={`${app.app.name} screenshot ${index + 1}`}
-                        fill
-                        quality={90}
-                        sizes="120px"
-                        className="object-contain"
-                        priority={index < 3}
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-          </div>
-        )}
+              {/* Decorative corner sheen — soft brand wash, top-left */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-hero-sheen"
+              />
 
-        {/* About this app */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-medium font-roboto">About this app</h2>
-          </div>
-          <div className="relative">
-            <p className={`text-sm text-gray-700 ${isDescriptionExpanded ? '' : 'line-clamp-4'}`}>
-              {/* For now using legacy field, will need to fetch from profile later */}
-              {app.developer ? `Built by ${app.developer}` : "No description available"}
-            </p>
-            <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="text-blue-600 text-sm font-medium mt-1 hover:text-blue-700"
-            >
-              {isDescriptionExpanded ? 'See less' : 'See more'}
-            </button>
-          </div>
-        </div>
-
-        {/* Categories */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            {app.categories.map((category, index) => (
-              <span key={index} className="text-sm bg-gray-100 px-3 py-1 rounded-full">
-                {category}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* About the publisher */}
-        <div className="mb-6 border-t border-gray-200 pt-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-medium font-roboto">About the publisher</h2>
-          </div>
-          
-          {isLoadingPublisher ? (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start">
-                <div className="h-12 w-12 bg-gray-200 rounded-full mr-4 animate-pulse"></div>
-                <div className="flex-1">
-                  <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-4 w-28 bg-gray-200 rounded animate-pulse mb-3"></div>
-                </div>
-              </div>
-              
-              <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-2"></div>
-              <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse mb-2"></div>
-              
-              <div className="flex gap-2 mt-1">
-                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start">
-                <Avatar className="h-12 w-12 mr-4">
-                  <AvatarImage 
-                    src={publisherData?.profileImages && publisherData.profileImages.length > 0 
-                      ? publisherData.profileImages[0].url
-                      : app?.icon || ""} 
-                    alt={publisherData?.name || app?.developer || ""}
-                    className="object-contain"
+              <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+                {/* Squircle icon with a soft brand glow for depth */}
+                <div className="relative shrink-0">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -inset-3 rounded-[2rem] bg-brand/15 blur-2xl"
                   />
-                  <AvatarFallback>{app?.developer?.substring(0, 2) || "UP"}</AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1">
-                  <div className="flex items-center mb-1">
-                    <h3 className="font-medium text-base mr-2">
-                      {publisherData?.name || app?.developer || ""}
-                    </h3>
-                    <span className="text-xs text-gray-600">
-                      {publisherData?.followed?.length || "0"} followers
-                    </span>
+                  <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-white/65 bg-white/35 shadow-glass ring-1 ring-inset ring-white/55 backdrop-blur-xl sm:h-24 sm:w-24">
+                    <Image
+                      src={app.icon || ""}
+                      alt={`${app.app.name} app icon`}
+                      fill
+                      quality={95}
+                      sizes="96px"
+                      className="object-cover"
+                    />
                   </div>
-                  
-                  {publisherData?.createdTimestamp && (
-                    <p className="text-xs text-gray-500 mb-1">
-                      Joined {new Date(Number(publisherData.createdTimestamp) * 1000).toLocaleDateString(undefined, { 
-                        year: 'numeric', 
-                        month: 'short'
-                      })}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                    {app.app.name}
+                  </h1>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <BadgeCheck
+                      className="h-4 w-4 shrink-0 text-brand"
+                      aria-hidden
+                    />
+                    <p className="truncate text-sm font-medium text-text-secondary">
+                      {app.developer || "Universal Profile"}
                     </p>
+                  </div>
+
+                  {/* Category chips */}
+                  {app.categories.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {app.categories.map((category) => (
+                        <span key={category} className="chip">
+                          {category}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
-              
-              {publisherData?.description && (
-                <p className="text-sm text-gray-700 line-clamp-4">
-                  {publisherData.description}
-                </p>
-              )}
-              
-              {/* Links - Only render if links exist */}
-              {publisherData?.links && publisherData.links.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {publisherData.links.map((link, index) => (
-                    <Button key={index} variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
-                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                        {link.title || "Link"} <ExternalLink className="w-3 h-3 ml-1" />
+
+              {/* ---- Context-aware ACTION — Add to Grid works everywhere ---- */}
+              <div className="relative mt-6 flex flex-col gap-2.5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button
+                    variant="glass-light"
+                    size="pill"
+                    className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openApp(app);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" aria-hidden />
+                    <span>Open App</span>
+                  </Button>
+
+                  {canInstallToGrid ? (
+                    /* In the UP grid: write LSP28TheGrid directly. */
+                    <Button
+                      variant="ghost-outline"
+                      size="pill"
+                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:min-w-[180px]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleInstall(app);
+                      }}
+                      disabled={isInstalling}
+                    >
+                      {isInstalling ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                          <span>Adding…</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4" aria-hidden />
+                          <span>Add to Grid</span>
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    /* Desktop / standalone: hand off to the universaleverything.io
+                       add-widget flow. A real anchor — crawlable and agent-readable. */
+                    <Button
+                      asChild
+                      variant="ghost-outline"
+                      size="pill"
+                      className="h-12 w-full text-sm font-semibold text-brand-text sm:w-auto sm:min-w-[180px]"
+                    >
+                      <a
+                        href={getAddToGridUrl(app)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Add ${app.app.name} to your Universal Profile Grid on universaleverything.io`}
+                      >
+                        <Plus className="h-4 w-4" aria-hidden />
+                        <span>Add to Grid</span>
                       </a>
                     </Button>
-                  ))}
+                  )}
+                </div>
+
+                {!canInstallToGrid && (
+                  <p className="flex items-center gap-1.5 text-xs text-text-tertiary">
+                    <LayoutGrid className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    <span>
+                      Add to Grid opens universaleverything.io to add this app to
+                      your Universal Profile — on desktop or mobile.
+                    </span>
+                  </p>
+                )}
+              </div>
+            </motion.section>
+
+            {/* ---- Widgets — extra surfaces addable to the Grid ---- */}
+            {app.widgets && app.widgets.length > 0 && (
+              <motion.section variants={fadeUp}>
+                <div className="mb-3">
+                  <h2 className="font-display text-lg font-semibold text-foreground">
+                    Widgets
+                  </h2>
+                  <p className="mt-0.5 text-sm text-text-secondary">
+                    Add any of {app.developer ? `${app.developer}'s` : "these"}{" "}
+                    widgets to your Grid.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {app.widgets.map((widget) => {
+                    const installed = isInstalled(app, widget);
+                    return (
+                      <div
+                        key={widget.url}
+                        className="flex flex-col rounded-lg border border-border bg-card p-4 shadow-rest"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">
+                            <LayoutGrid
+                              className="h-4 w-4 shrink-0 text-brand"
+                              aria-hidden
+                            />
+                            <span className="truncate">{widget.name}</span>
+                          </h3>
+                          <span
+                            className="chip shrink-0 tabular-nums"
+                            title="Grid footprint (columns × rows)"
+                          >
+                            {widget.gridSize.width}×{widget.gridSize.height}
+                          </span>
+                        </div>
+                        {widget.description && (
+                          <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-text-secondary">
+                            {widget.description}
+                          </p>
+                        )}
+                        <Button
+                          variant="glass-light"
+                          size="pill"
+                          className="mt-3 h-10 w-full text-sm font-medium text-brand-text"
+                          disabled={isInstalling || installed}
+                          aria-label={
+                            installed
+                              ? `${widget.name} already on your Grid`
+                              : `Add ${widget.name} to your Grid`
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToGrid(app, widget);
+                          }}
+                        >
+                          {installed ? (
+                            <>
+                              <BadgeCheck className="h-4 w-4" aria-hidden />
+                              <span>Added</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-4 w-4" aria-hidden />
+                              <span>Add to Grid</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.section>
+            )}
+
+            {/* ---- Screenshots carousel ---- */}
+            {hasScreenshots && (
+              <motion.section variants={fadeUp}>
+                <h2 className="mb-3 font-display text-lg font-semibold text-foreground">
+                  Preview
+                </h2>
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: false,
+                    skipSnaps: false,
+                    containScroll: "trimSnaps",
+                  }}
+                  className="w-full"
+                >
+                  <CarouselContent className="-ml-3 flex flex-row py-1">
+                    {previewImages.map((image, index) => (
+                      <CarouselItem
+                        key={index}
+                        className="basis-[160px] shrink-0 pl-3 sm:basis-[180px]"
+                      >
+                        <button
+                          type="button"
+                          className="group relative block h-[260px] w-full overflow-hidden rounded-lg border border-border bg-card shadow-rest transition hover:shadow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-[300px]"
+                          onClick={() => openLightbox(index)}
+                          aria-label={`View ${app.app.name} screenshot ${
+                            index + 1
+                          } full screen`}
+                        >
+                          <Image
+                            src={image}
+                            alt={`${app.app.name} screenshot ${index + 1}`}
+                            fill
+                            quality={90}
+                            sizes="180px"
+                            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                            priority={index < 3}
+                          />
+                        </button>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+              </motion.section>
+            )}
+
+            {/* ---- About (solid surface, no glass for legibility) ---- */}
+            <motion.section
+              variants={fadeUp}
+              className="rounded-lg border border-border bg-card p-5 shadow-rest sm:p-6"
+            >
+              <h2 className="mb-2 font-display text-lg font-semibold text-foreground">
+                About this app
+              </h2>
+              <p className="text-sm leading-relaxed text-text-secondary">
+                {description}
+              </p>
+            </motion.section>
+
+            {/* ---- Details accordion (source code, grid footprint) ---- */}
+            <motion.section
+              variants={fadeUp}
+              className="overflow-hidden rounded-lg border border-border bg-card px-5 shadow-rest sm:px-6"
+            >
+              <Accordion
+                type="single"
+                collapsible
+                defaultValue="details"
+                className="w-full"
+              >
+                <AccordionItem value="details" className="border-b-0">
+                  <AccordionTrigger className="font-display text-base font-semibold hover:no-underline">
+                    Details
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <dl className="flex flex-col divide-y divide-border">
+                      <div className="flex items-center justify-between py-2.5">
+                        <dt className="text-sm text-text-secondary">
+                          Grid footprint
+                        </dt>
+                        <dd className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          <LayoutGrid
+                            className="h-3.5 w-3.5 text-text-tertiary"
+                            aria-hidden
+                          />
+                          {app.app.defaultGridSize.width} ×{" "}
+                          {app.app.defaultGridSize.height}
+                        </dd>
+                      </div>
+                      <div className="flex items-center justify-between py-2.5">
+                        <dt className="text-sm text-text-secondary">
+                          Categories
+                        </dt>
+                        <dd className="text-sm font-medium text-foreground">
+                          {app.categories.join(", ") || "—"}
+                        </dd>
+                      </div>
+                      {app.app.sourceCode && (
+                        <div className="flex items-center justify-between py-2.5">
+                          <dt className="text-sm text-text-secondary">
+                            Source code
+                          </dt>
+                          <dd>
+                            <a
+                              href={app.app.sourceCode}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-full px-1 text-sm font-medium text-brand-text transition hover:text-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <Code2 className="h-3.5 w-3.5" aria-hidden />
+                              View on GitHub
+                              <ExternalLink className="h-3 w-3" aria-hidden />
+                            </a>
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </motion.section>
+          </div>
+
+          {/* ============ RIGHT / SIDEBAR COLUMN ============ */}
+          <motion.aside variants={fadeUp} className="flex flex-col gap-6">
+            {/* ---- Publisher card ---- */}
+            <div className="rounded-lg border border-border bg-card p-5 shadow-rest sm:p-6 lg:sticky lg:top-20">
+              <h2 className="mb-4 font-display text-lg font-semibold text-foreground">
+                Publisher
+              </h2>
+
+              {isLoadingPublisher ? (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 animate-pulse rounded-full bg-muted" />
+                    <div className="flex-1">
+                      <div className="mb-2 h-5 w-40 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+                    </div>
+                  </div>
+                  <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                  <div className="mt-1 flex gap-2">
+                    <div className="h-8 w-20 animate-pulse rounded-full bg-muted" />
+                    <div className="h-8 w-20 animate-pulse rounded-full bg-muted" />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12 shrink-0 border border-border">
+                      <AvatarImage
+                        src={publisherAvatar}
+                        alt={publisherName}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-muted text-text-secondary">
+                        {(app?.developer || "UP").substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-base font-semibold text-foreground">
+                        {publisherName}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-text-tertiary">
+                        {publisherData?.followed?.length || 0} follower
+                        {(publisherData?.followed?.length || 0) === 1
+                          ? ""
+                          : "s"}
+                      </p>
+                      {publisherData?.createdTimestamp && (
+                        <p className="mt-0.5 text-xs text-text-tertiary">
+                          Joined{" "}
+                          {new Date(
+                            Number(publisherData.createdTimestamp) * 1000
+                          ).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {publisherData?.description && (
+                    <p className="text-sm leading-relaxed text-text-secondary line-clamp-4">
+                      {publisherData.description}
+                    </p>
+                  )}
+
+                  {/* Links */}
+                  {publisherData?.links && publisherData.links.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {publisherData.links.map((link, index) => (
+                        <a
+                          key={index}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-strong bg-transparent px-3 text-xs font-medium text-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]"
+                        >
+                          {link.title || "Link"}
+                          <ExternalLink className="h-3 w-3" aria-hidden />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          </motion.aside>
         </div>
-      </main>
+      </motion.main>
 
-      {/* Full-screen Image Viewer */}
-      {openImageViewer && app.app.previewImages && app.app.previewImages.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-          {/* Image container with smaller bounded size */}
-          <div className="relative bg-white rounded-lg overflow-hidden max-w-[85%] max-h-[85vh] w-auto shadow-xl">
-            {/* Close button */}
-            <button 
-              onClick={closeLightbox}
-              className="absolute top-2 left-2 bg-gray-700 text-white p-1.5 rounded-full z-50 hover:bg-black transition-all duration-200 ease-in-out"
-              aria-label="Close"
+      {/* ===== Full-screen Image Lightbox (keyboard nav preserved) ===== */}
+      <AnimatePresence>
+        {openImageViewer && hasScreenshots && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${app.app.name} screenshots`}
+            onClick={closeLightbox}
+          >
+            <motion.div
+              initial={{ scale: reduceMotion ? 1 : 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: reduceMotion ? 1 : 0.96, opacity: 0 }}
+              transition={{ duration: 0.22, ease: EASE_ENTRANCE }}
+              className="relative max-h-[85vh] w-auto max-w-[85%] overflow-hidden rounded-xl bg-card shadow-glass"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={20} />
-            </button>
-            
-            <div className="relative w-full h-full flex items-center justify-center">
-              <Image
-                src={app.app.previewImages[currentImageIndex]}
-                alt={`${app.app.name} screenshot ${currentImageIndex + 1}`}
-                className="object-contain"
-                width={275}
-                height={800}
-                quality={100}
-                priority
-              />
-            </div>
+              {/* Close button */}
+              <button
+                onClick={closeLightbox}
+                className="absolute left-3 top-3 z-50 inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full glass text-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Close screenshot viewer"
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </button>
 
-            {/* Image counter */}
-            <div className="absolute bottom-3 left-0 right-0 text-center text-black text-sm">
-              {currentImageIndex + 1} / {app.app.previewImages.length}
-            </div>
-          </div>
+              <div className="relative flex h-full w-full items-center justify-center">
+                <Image
+                  src={previewImages[currentImageIndex]}
+                  alt={`${app.app.name} screenshot ${currentImageIndex + 1}`}
+                  className="max-h-[85vh] w-auto object-contain"
+                  width={275}
+                  height={800}
+                  quality={100}
+                  priority
+                />
+              </div>
 
-          {/* Navigation arrows - moved outside the card */}
-          <button 
-            onClick={goToPreviousImage}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-800 p-2 rounded-full bg-white bg-opacity-80 hover:bg-white transition-all duration-200 ease-in-out"
-            aria-label="Previous image"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          
-          <button 
-            onClick={goToNextImage}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-800 p-2 rounded-full bg-white bg-opacity-80 hover:bg-white transition-all duration-200 ease-in-out"
-            aria-label="Next image"
-          >
-            <ArrowRight size={24} />
-          </button>
-        </div>
-      )}
+              {/* Image counter */}
+              <div className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium text-card-foreground">
+                {currentImageIndex + 1} / {previewImages.length}
+              </div>
+            </motion.div>
 
-      {/* Grid Selection Dialog */}
+            {/* Navigation arrows */}
+            {previewImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPreviousImage();
+                  }}
+                  className="absolute left-4 top-1/2 inline-flex h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full glass text-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Previous image"
+                >
+                  <ArrowLeft className="h-5 w-5" aria-hidden />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNextImage();
+                  }}
+                  className="absolute right-4 top-1/2 inline-flex h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full glass text-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Next image"
+                >
+                  <ArrowRight className="h-5 w-5" aria-hidden />
+                </button>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Grid Selection Dialog (wiring preserved through useAppLaunch) */}
       <GridSelectionDialog
         open={showGridSelection}
         onOpenChange={setShowGridSelection}
         sections={sections}
-        appName={app.app.name}
+        appName={pendingWidget?.name ?? app.app.name}
         onGridSelect={handleGridSelect}
         onCancel={handleGridSelectionCancel}
       />
     </div>
   );
-} 
+}

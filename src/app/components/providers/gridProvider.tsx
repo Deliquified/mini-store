@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { ERC725 } from '@erc725/erc725.js';
 import { useUpProvider } from "./upProvider";
 
 const RPC_ENDPOINT = 'https://42.rpc.thirdweb.com';
@@ -100,6 +99,8 @@ export function GridProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       try {
+        const { ERC725 } = await import('@erc725/erc725.js');
+
         // Create ERC725 instance
         const erc725js = new ERC725(
           lsp28schema, 

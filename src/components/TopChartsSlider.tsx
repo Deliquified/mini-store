@@ -1,126 +1,234 @@
-import { App, getAppsByCategory, getPrimaryCategory } from "@/data/appCatalog";
+"use client";
+
 import Image from "next/image";
+import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
+
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import { useState } from "react";
+  App,
+  categories as appCategories,
+  getPrimaryCategory,
+  sortByOpenCount,
+} from "@/data/appCatalog";
 
 interface TopChartsSliderProps {
   apps: App[];
   onAppClick: (app: App) => void;
+  /**
+   * Global open counts ({ [appId]: count }). When provided, rows rank
+   * most-opened first within the active category. Empty/undefined falls back to
+   * the incoming order, so SSR/first render stays stable (see useTrending).
+   */
+  trendingCounts?: Record<string, number>;
 }
 
-type ChartFilter = "defi" | "staking" | "nfts";
+type ChartFilter = string;
 
-export default function TopChartsSlider({ apps, onAppClick }: TopChartsSliderProps) {
-  const [activeFilter, setActiveFilter] = useState<ChartFilter>("defi");
-  
+const PRIORITY_CATEGORIES = [
+  "DeFi",
+  "Staking",
+  "NFTs",
+  "Marketplaces",
+  "Community",
+  "Social",
+  "Infrastructure",
+  "Exchanges",
+];
+
+export default function TopChartsSlider({
+  apps,
+  onAppClick,
+  trendingCounts,
+}: TopChartsSliderProps) {
+  const [activeFilter, setActiveFilter] = useState<ChartFilter>("DeFi");
+  const reduceMotion = useReducedMotion();
+  const filterOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    apps.forEach((app) => {
+      app.categories.forEach((category) => {
+        counts.set(category, (counts.get(category) ?? 0) + 1);
+      });
+    });
+
+    return Object.values(appCategories)
+      .map((category) => ({
+        id: category.id,
+        label: category.displayName,
+        count: counts.get(category.id) ?? 0,
+      }))
+      .filter((category) => category.count > 0)
+      .sort((a, b) => {
+        const aPriority = PRIORITY_CATEGORIES.indexOf(a.id);
+        const bPriority = PRIORITY_CATEGORIES.indexOf(b.id);
+
+        if (aPriority !== -1 || bPriority !== -1) {
+          return (
+            (aPriority === -1 ? Number.MAX_SAFE_INTEGER : aPriority) -
+            (bPriority === -1 ? Number.MAX_SAFE_INTEGER : bPriority)
+          );
+        }
+
+        return a.label.localeCompare(b.label);
+      });
+  }, [apps]);
+
   if (!apps || apps.length === 0) {
     return null;
   }
 
-  // Filter apps based on the selected category
-  const getFilteredApps = () => {
-    const category = activeFilter === "defi" ? "DeFi" :
-                    activeFilter === "staking" ? "Staking" :
-                    "NFTs";
-    
-    // Get apps for the selected category
-    const categoryApps = getAppsByCategory(category);
-    
-    // If it's staking category, remove apps that are already in DeFi category
-    if (category === "Staking") {
-      const defiApps = getAppsByCategory("DeFi");
-      return categoryApps.filter(app => !defiApps.some(defiApp => defiApp.id === app.id));
-    }
-    
-    return categoryApps;
-  };
+  // The default filter ("DeFi") may not exist in the current catalog; fall back
+  // to the first available category so the table never opens on an empty tab.
+  const effectiveFilter = filterOptions.some((filter) => filter.id === activeFilter)
+    ? activeFilter
+    : filterOptions[0]?.id ?? "";
 
-  const filteredApps = getFilteredApps();
-  
-  // Create groups of 3 apps for each column
-  const appGroups = [];
-  for (let i = 0; i < filteredApps.length; i += 3) {
-    appGroups.push(filteredApps.slice(i, i + 3));
-  }
+  // Rank most-opened first within the active category; ties keep incoming order.
+  const filteredApps = sortByOpenCount(
+    apps.filter((app) => app.categories.includes(effectiveFilter)),
+    trendingCounts ?? {}
+  );
+  const activeLabel =
+    filterOptions.find((filter) => filter.id === effectiveFilter)?.label ?? effectiveFilter;
 
   return (
-    <section className="mb-8">
-      <h2 className="text-[16px] font-bold mb-3 font-roboto">Top charts</h2>
-      
-      {/* Filter tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-        <button 
-          onClick={() => setActiveFilter("defi")}
-          className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap border border-1 min-w-[90px] text-center ${
-            activeFilter === "defi" 
-              ? "bg-blue-50 text-blue-700 border-blue-50 font-bold" 
-              : "bg-white text-gray-700 border-gray-200 font-medium"
-          }`}
-        >
-          Top DeFi
-        </button>
-        <button 
-          onClick={() => setActiveFilter("staking")}
-          className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap border border-1 min-w-[110px] text-center ${
-            activeFilter === "staking" 
-              ? "bg-blue-50 text-blue-700 border-blue-50 font-bold" 
-              : "bg-white text-gray-700 border-gray-200 font-medium"
-          }`}
-        >
-          Top Staking
-        </button>
-        <button 
-          onClick={() => setActiveFilter("nfts")}
-          className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap border border-1 min-w-[90px] text-center ${
-            activeFilter === "nfts" 
-              ? "bg-blue-50 text-blue-700 border-blue-50 font-bold" 
-              : "bg-white text-gray-700 border-gray-200 font-medium"
-          }`}
-        >
-          Top NFTs
-        </button>
+    <div>
+      {/* Segmented category filter (the section heading is owned by the parent
+          DiscoverSection). A set of toggle buttons, not tabs — there are no
+          tabpanels — so we use aria-pressed. */}
+      <div
+        className="seg-track mb-5 max-w-full overflow-x-auto"
+        role="group"
+        aria-label="Filter trending apps by category"
+      >
+        <div className="flex min-w-max gap-1">
+          {filterOptions.map((filter) => {
+            const isActive = effectiveFilter === filter.id;
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setActiveFilter(filter.id)}
+                className={`relative min-h-[44px] min-w-[88px] rounded-full px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  isActive ? "text-brand-text" : "text-text-secondary hover:text-foreground"
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="top-charts-pill"
+                    className="absolute inset-0 rounded-full bg-card shadow-rest"
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { type: "spring", stiffness: 380, damping: 32 }
+                    }
+                  />
+                )}
+                <span className="relative z-10 inline-flex items-center gap-1.5">
+                  {filter.label}
+                  <span className="text-xs tabular-nums text-text-secondary">
+                    {filter.count}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      
-      {/* App columns */}
-      <Carousel className="w-full" opts={{ align: "start" }}>
-        <CarouselContent className="-ml-2 md:-ml-4">
-          {appGroups.map((group, groupIndex) => (
-            <CarouselItem key={groupIndex} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <div className="border-b border-gray-100">
-                {group.map((app, index) => (
-                  <div 
-                    key={app.id} 
-                    className="flex items-center py-3 px-1 cursor-pointer hover:bg-gray-50"
+
+      {/* Announce the active category + result count to assistive tech */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {activeLabel}: {filteredApps.length}{" "}
+        {filteredApps.length === 1 ? "app" : "apps"}
+      </p>
+
+      {/* Ranked rows — solid content card, no glass (data-dense) */}
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-rest">
+        {filteredApps.length === 0 ? (
+          <div className="px-5 py-10 text-center text-sm text-text-secondary">
+            No apps in this category yet.
+          </div>
+        ) : (
+          <ul className="divide-y divide-border">
+            {filteredApps.map((app, index) => {
+              const rank = index + 1;
+              const isTop = rank === 1;
+              return (
+                <motion.li
+                  key={app.id}
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : {
+                          duration: 0.28,
+                          delay: Math.min(index, 11) * 0.04,
+                          ease: [0.22, 1, 0.36, 1],
+                        }
+                  }
+                >
+                  <button
+                    type="button"
                     onClick={() => onAppClick(app)}
+                    aria-label={`View ${app.app.name}, ranked number ${rank} in ${
+                      activeLabel
+                    }`}
+                    className="group relative flex w-full min-h-[44px] items-center gap-3 px-4 py-3 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:gap-4 sm:px-5"
                   >
-                    <span className="text-lg font-bold mr-3 w-6 flex-shrink-0 text-gray-500">
-                      {(groupIndex * 3) + index + 1}
+                    {/* Pink accent bar on #1 */}
+                    {isTop && (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-2 left-0 w-1 rounded-full bg-brand-gradient-soft"
+                      />
+                    )}
+
+                    {/* Rank numeral */}
+                    <span
+                      aria-hidden
+                      className={`w-7 flex-shrink-0 text-center font-display text-lg font-bold tabular-nums sm:w-8 sm:text-xl ${
+                        isTop ? "text-brand-text" : "text-text-tertiary"
+                      }`}
+                    >
+                      {rank}
                     </span>
-                    
-                    <div className="relative w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-gray-100 flex-shrink-0 mr-3">
+
+                    {/* Squircle icon */}
+                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-muted shadow-rest">
                       <Image
                         src={app.icon || ""}
-                        alt={app.app.name}
+                        alt={`${app.app.name} icon`}
                         fill
+                        sizes="48px"
                         className="object-contain"
                       />
                     </div>
-                    
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <h3 className="text-sm font-medium truncate">{app.app.name}</h3>
-                      <p className="text-xs text-gray-600 truncate">{getPrimaryCategory(app)}</p>
+
+                    {/* Name + category */}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <h3 className="truncate text-[15px] font-medium text-foreground">
+                        {app.app.name}
+                      </h3>
+                      <p className="truncate text-[13px] text-text-secondary">
+                        {getPrimaryCategory(app)}
+                      </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-    </section>
+
+                    {/* Chevron affordance */}
+                    <ChevronRight
+                      aria-hidden
+                      className="h-5 w-5 flex-shrink-0 text-text-tertiary transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-text-secondary"
+                    />
+                  </button>
+                </motion.li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
   );
-} 
+}
