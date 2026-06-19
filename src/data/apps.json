@@ -182,6 +182,31 @@
       "Controller"
     ]
   },
+  "agent-token-claimer": {
+    "name": "Token Claimer: Create LUKSO Drops",
+    "url": "https://agent-token-claimer.vercel.app/",
+    "sourceCode": "https://github.com/JordyDutch/Token-Claimer",
+    "developer": "JordyDutch & LUKSO Agent",
+    "publisher": "0x293E96ebbf264ed7715cff2b67850517De70232a",
+    "categories": [
+      "DeFi",
+      "NFTs",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "Token Claimer",
+      "Drops",
+      "LSP7",
+      "LSP8",
+      "Airdrops"
+    ]
+  },
   "universal-everything": {
     "name": "Universal Everything: Explore Profiles",
     "url": "https://universaleverything.io/",
@@ -245,6 +270,29 @@
       "Swap",
       "Liquidity",
       "DeFi"
+    ]
+  },
+  "phlame-garden": {
+    "name": "PHLAME Garden: Onchain Reputation",
+    "url": "https://phlame-protocol-v1.vercel.app/garden.html",
+    "developer": "Phlox",
+    "publisher": "0xa49c3e8f135307eee2ac4dd813972ce7d4ead418",
+    "categories": [
+      "Social",
+      "Community",
+      "DeFi"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "PHLAME",
+      "Reputation",
+      "Garden",
+      "Leaderboard"
     ]
   },
   "potato-tipper": {
@@ -419,6 +467,69 @@
       "Community",
       "Coordination",
       "Events"
+    ]
+  },
+  "gallery-marketplace": {
+    "name": "3D Marketplace: Grid Gallery",
+    "url": "https://universaleverything.io/0xAE493C002dA6afaa239F68931A438183DE01b0c1?assetGroup=grid",
+    "developer": "Universal Everything",
+    "publisher": "0xAE493C002dA6afaa239F68931A438183DE01b0c1",
+    "categories": [
+      "Marketplaces",
+      "NFTs"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "3D",
+      "Marketplace",
+      "Grid",
+      "Universal Page"
+    ]
+  },
+  "day-glimpse": {
+    "name": "Day Glimpse: Share Grid Moments",
+    "url": "https://universaleverything.io/0xd34cd7127b5fa1522f9739a1b575f60821f5bc31",
+    "developer": "Day Glimpse",
+    "publisher": "0xd34cd7127b5fa1522f9739a1b575f60821f5bc31",
+    "categories": [
+      "Social",
+      "Community"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "Day Glimpse",
+      "Grid",
+      "Moments",
+      "Mini App"
+    ]
+  },
+  "follower-tracker": {
+    "name": "FollowerTracker: Analyze UP Connections",
+    "url": "https://profile.link/followertracker@F160",
+    "developer": "FollowerTracker",
+    "publisher": "0xf160ee4e7d25f8a15d981848c9643289d25ed9fd",
+    "categories": [
+      "Social",
+      "Infrastructure"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "tags": [
+      "Followers",
+      "Universal Profile",
+      "Social Graph",
+      "Analytics"
     ]
   },
   "universal-everything-create-asset": {
