@@ -32,6 +32,7 @@ import Link from "next/link";
 import { App } from "@/data/appCatalog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Wordmark } from "@/components/Wordmark";
+import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { client as apolloClient } from "@/app/components/apollo/apolloClient";
 import { useGrid } from "@/app/components/providers/gridProvider";
@@ -268,7 +269,7 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
     : "No description available yet for this app.";
 
   return (
-    <div className="relative flex w-full flex-col bg-background text-foreground">
+    <div className="relative flex min-h-[100dvh] w-full flex-col bg-background text-foreground">
       {/* Ambient brand glow behind the hero (decorative) */}
       <div
         aria-hidden
@@ -733,6 +734,10 @@ export default function AppDetailPage({ app, onBack }: AppDetailPageProps) {
           </motion.aside>
         </div>
       </motion.main>
+
+      {/* Footer — same contribute/guide pointer as the list pages, so a wrong
+          detail on this app is one PR away from being fixed. */}
+      <Footer />
 
       {/* ===== Full-screen Image Lightbox (keyboard nav preserved) ===== */}
       <AnimatePresence>
