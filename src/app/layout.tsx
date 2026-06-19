@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/next";
+
 import { Providers } from "./components/providers/providers";
 import { siteUrl } from "@/lib/site";
 
@@ -18,11 +20,54 @@ const display = Space_Grotesk({
   display: "swap",
 });
 
+const siteName = "LUKSO UP!Store";
+const siteDescription =
+  "Discover and launch apps for your Universal Profile. Browse the LUKSO UP!Store anywhere, or add apps directly to your Grid.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "LUKSO UP!Store",
-  description:
-    "Discover and launch apps for your Universal Profile. Browse the LUKSO UP!Store anywhere, or add apps directly to your Grid.",
+  title: siteName,
+  description: siteDescription,
+  applicationName: siteName,
+  keywords: [
+    "LUKSO",
+    "Universal Profile",
+    "Mini-Apps",
+    "UP Grid",
+    "dApps",
+    "Web3",
+    "LYX",
+    "UP!Store",
+  ],
+  authors: [{ name: siteName, url: siteUrl }],
+  creator: siteName,
+  publisher: siteName,
+  // Page-level OG image is supplied by app/opengraph-image.tsx (file convention);
+  // per-app pages override title/description/images in their generateMetadata.
+  openGraph: {
+    type: "website",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+    url: siteUrl,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   icons: {
     icon: "/up-logo.png",
     apple: "/up-logo.png",
@@ -92,6 +137,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${display.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
