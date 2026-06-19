@@ -180,34 +180,33 @@ export default function SearchPage({ onAppClick }: SearchPageProps) {
             </div>
 
           </div>
-
-          <nav
-            aria-label="Filter apps by category"
-            className="-mx-3 mt-3 overflow-x-auto px-3 py-1 sm:-mx-6 sm:px-6"
-          >
-            <div className="flex min-w-max gap-2">
-              <CategoryChip
-                label="All"
-                count={allApps.length}
-                active={selectedCategory === "all"}
-                onClick={() => setSelectedCategory("all")}
-              />
-              {categoryCounts.map((category) => (
-                <CategoryChip
-                  key={category.id}
-                  label={category.displayName}
-                  count={category.count}
-                  icon={categoryIcons[category.name] || <Star className="h-4 w-4" />}
-                  active={selectedCategory === category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                />
-              ))}
-            </div>
-          </nav>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1100px] px-3 pb-safe-content pt-3 sm:px-6 sm:pt-5">
+      <main className="mx-auto w-full max-w-[1100px] px-3 pb-safe-content pt-4 sm:px-6 sm:pt-5">
+        {/* Category tag cloud — wraps across rows instead of a single scroll row */}
+        <nav aria-label="Filter apps by category" className="mb-4">
+          <p className="eyebrow mb-2">Browse by category</p>
+          <div className="flex flex-wrap gap-1.5">
+            <CategoryChip
+              label="All"
+              count={allApps.length}
+              active={selectedCategory === "all"}
+              onClick={() => setSelectedCategory("all")}
+            />
+            {categoryCounts.map((category) => (
+              <CategoryChip
+                key={category.id}
+                label={category.displayName}
+                count={category.count}
+                icon={categoryIcons[category.name] || <Star className="h-4 w-4" />}
+                active={selectedCategory === category.id}
+                onClick={() => setSelectedCategory(category.id)}
+              />
+            ))}
+          </div>
+        </nav>
+
         <div className="mb-3 flex min-h-7 items-center justify-between gap-3 px-1">
           <p className="truncate text-[13px] font-medium text-text-secondary">
             {activeCategory ? `${activeCategory.displayName} - ${resultLabel}` : resultLabel}
@@ -278,24 +277,22 @@ function CategoryChip({ label, count, active, icon, onClick }: CategoryChipProps
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-10 min-w-fit items-center gap-1.5 rounded-full border px-3 text-sm font-medium shadow-glass backdrop-blur-xl transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium shadow-glass backdrop-blur-xl transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:h-3.5 [&_svg]:w-3.5",
         active
           ? "border-white/80 bg-white/50 text-brand-text ring-1 ring-inset ring-white/55 hover:bg-white/60 dark:border-white/15 dark:bg-white/15 dark:text-white dark:hover:bg-white/20"
           : "border-white/65 bg-white/30 text-foreground ring-1 ring-inset ring-white/35 hover:bg-white/45 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
       )}
     >
       {icon ? (
-        <span className="shrink-0" aria-hidden="true">
+        <span className="shrink-0 text-text-tertiary" aria-hidden="true">
           {icon}
         </span>
       ) : null}
       <span>{label}</span>
       <span
         className={cn(
-          "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
-          active
-            ? "bg-brand/10 text-brand-text dark:bg-white/15 dark:text-white"
-            : "bg-white/35 text-text-secondary dark:bg-white/10 dark:text-white/70"
+          "tabular-nums text-[11px]",
+          active ? "text-brand-text dark:text-white/80" : "text-text-tertiary"
         )}
       >
         {count}
