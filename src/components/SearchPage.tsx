@@ -277,14 +277,14 @@ function CategoryChip({ label, count, active, icon, onClick }: CategoryChipProps
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium shadow-glass backdrop-blur-xl transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:h-3.5 [&_svg]:w-3.5",
+        "inline-flex h-8 grow items-center justify-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium transition-colors active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:h-3.5 [&_svg]:w-3.5",
         active
-          ? "border-white/80 bg-white/50 text-brand-text ring-1 ring-inset ring-white/55 hover:bg-white/60 dark:border-white/15 dark:bg-white/15 dark:text-white dark:hover:bg-white/20"
-          : "border-white/65 bg-white/30 text-foreground ring-1 ring-inset ring-white/35 hover:bg-white/45 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
+          ? "border-brand bg-brand text-primary-foreground shadow-sm hover:bg-brand-hover dark:text-background dark:hover:bg-brand-hover"
+          : "border-border-strong bg-card text-foreground hover:bg-muted dark:bg-muted dark:hover:bg-accent"
       )}
     >
       {icon ? (
-        <span className="shrink-0 text-text-tertiary" aria-hidden="true">
+        <span className="shrink-0 text-current opacity-70" aria-hidden="true">
           {icon}
         </span>
       ) : null}
@@ -292,7 +292,9 @@ function CategoryChip({ label, count, active, icon, onClick }: CategoryChipProps
       <span
         className={cn(
           "tabular-nums text-[11px]",
-          active ? "text-brand-text dark:text-white/80" : "text-text-tertiary"
+          active
+            ? "text-primary-foreground/75 dark:text-background/70"
+            : "text-text-tertiary"
         )}
       >
         {count}
