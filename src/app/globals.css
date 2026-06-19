@@ -179,6 +179,19 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Paint the canvas behind <body> too, so any momentary overscroll gap at
+       the very top shows the app background — not the in-app browser behind it. */
+    @apply bg-background;
+  }
+  html,
+  body {
+    /* Stop iOS rubber-band overscroll inside the LUKSO in-app browser. Without
+       this, scrolling past the top "bounces" the page and lifts the sticky
+       navbar off the top, revealing the webview behind it
+       ("met scrollen laat de navbar de top los"). */
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }

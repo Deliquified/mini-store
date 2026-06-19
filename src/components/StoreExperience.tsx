@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Compass, Store } from "lucide-react";
+import { Compass, Search } from "lucide-react";
 
 import { useUpProvider } from "@/app/components/providers/upProvider";
 import { useProfile } from "@/app/components/providers/profileProvider";
@@ -33,7 +33,7 @@ const TABS: { id: Tab; label: string; icon: typeof Compass }[] = [
   { id: "explore", label: "Explore", icon: Compass },
 ];
 
-const STORE_LINK = { href: "/store", label: "Store" };
+const STORE_LINK = { href: "/store", label: "Search" };
 
 export default function StoreExperience({ variant = "auto" }: StoreExperienceProps) {
   const router = useRouter();
@@ -205,7 +205,7 @@ export default function StoreExperience({ variant = "auto" }: StoreExperiencePro
               href={STORE_LINK.href}
               className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
             >
-              <Store className="h-4 w-4" aria-hidden="true" />
+              <Search className="h-4 w-4" aria-hidden="true" />
               {STORE_LINK.label}
             </Link>
           </div>

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Compass, Store } from "lucide-react";
+import { Compass, Search } from "lucide-react";
 
 import { useProfile } from "@/app/components/providers/profileProvider";
 import { useUpProvider } from "@/app/components/providers/upProvider";
@@ -86,8 +86,8 @@ function StoreNavbar() {
               aria-current="page"
               className="relative flex h-9 min-h-[44px] items-center gap-1.5 px-3 text-sm font-medium text-brand-text"
             >
-              <Store className="h-4 w-4" aria-hidden="true" />
-              Store
+              <Search className="h-4 w-4" aria-hidden="true" />
+              Search
               <span
                 aria-hidden="true"
                 className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand"
@@ -144,8 +144,8 @@ function StoreNavbar() {
             aria-current="page"
             className="seg-active flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
           >
-            <Store className="h-4 w-4" aria-hidden="true" />
-            Store
+            <Search className="h-4 w-4" aria-hidden="true" />
+            Search
           </span>
         </div>
       </div>
