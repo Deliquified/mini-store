@@ -179,6 +179,19 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Paint the canvas behind <body> too, so any momentary overscroll gap at
+       the very top shows the app background — not the in-app browser behind it. */
+    @apply bg-background;
+  }
+  html,
+  body {
+    /* Stop iOS rubber-band overscroll inside the LUKSO in-app browser. Without
+       this, scrolling past the top "bounces" the page and lifts the sticky
+       navbar off the top, revealing the webview behind it
+       ("met scrollen laat de navbar de top los"). */
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
@@ -259,6 +272,66 @@
   }
   .seg-inactive {
     @apply rounded-full text-text-secondary px-4 h-9 text-sm font-medium hover:text-foreground;
+  }
+
+  /* ---- Liquid-glass sliding switch (Apple "Liquid Glass") ---- */
+  /* A subtle frosted rail with a clean white pill "thumb" that slides under the
+     active label (positioned by framer-motion in <NavSwitch>). The thumb keeps
+     the original crisp, white-and-clean look — just a solid card surface with a
+     soft drop shadow — now sliding between the two sections. */
+  .lg-switch {
+    @apply relative inline-flex w-full items-center rounded-full p-1;
+    background: rgba(123, 128, 168, 0.12);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5),
+      inset 0 -1px 2px rgba(16, 17, 21, 0.05), 0 1px 2px rgba(16, 17, 21, 0.04);
+  }
+  .lg-switch-thumb {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    border-radius: 9999px;
+    /* Clean white frosted glass: white-tinted and translucent, so the backdrop
+       blur clearly reads as glass — but no colour cast, so it stays crisp and
+       white rather than the muddy lavender of a near-clear lens. */
+    background: rgba(255, 255, 255, 0.5);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.3), 0 4px 14px rgba(16, 17, 21, 0.12),
+      0 1px 2px rgba(16, 17, 21, 0.08);
+  }
+  .lg-switch-item {
+    @apply relative z-10 flex min-h-[44px] flex-1 items-center justify-center gap-1.5
+      rounded-full px-4 text-sm font-medium text-text-secondary;
+    transition: color 0.25s ease;
+  }
+  .lg-switch-item-active {
+    @apply text-brand-text;
+  }
+  .dark .lg-switch {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+  .dark .lg-switch-thumb {
+    /* Light translucent frost on dark — clean, not muddy. */
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+  /* Opaque fallback where backdrop-filter is unsupported. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .lg-switch-thumb {
+      background: hsl(var(--card) / 0.92);
+    }
   }
 
   /* ---- Eyebrow overline ---- */

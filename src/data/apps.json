@@ -207,6 +207,31 @@
       "Airdrops"
     ]
   },
+  "lsp-asset-mover": {
+    "name": "LSP Asset Mover: Transfer Assets",
+    "url": "https://lsp-asset-mover.vercel.app/",
+    "sourceCode": "https://github.com/JordyDutch/LSP-Asset-Mover",
+    "developer": "JordyDutch & LUKSO Agent",
+    "publisher": "0x293E96ebbf264ed7715cff2b67850517De70232a",
+    "categories": [
+      "Security",
+      "Infrastructure",
+      "NFTs"
+    ],
+    "gridSize": [
+      1,
+      2
+    ],
+    "screenshots": 1,
+    "featured": true,
+    "tags": [
+      "LSP7",
+      "LSP8",
+      "Assets",
+      "Migration",
+      "Universal Profile"
+    ]
+  },
   "universal-everything": {
     "name": "Universal Everything: Explore Profiles",
     "url": "https://universaleverything.io/",

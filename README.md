@@ -1,175 +1,185 @@
-# LUKSO UP!Store - Your Universal Profile App Discovery Platform
+# LUKSO UP!Store
 
-The LUKSO UP!Store is a decentralized app discovery platform built for the LUKSO ecosystem, designed to make it easy for users to find, install, and manage Universal Profile mini-apps. Think of it as the "App Store" for the LUKSO ecosystem, but with a focus on decentralization and user sovereignty.
+LUKSO UP!Store is a community-maintained directory for LUKSO Universal Profile
+Mini-Apps. Users can browse apps, open them directly, or add them to a Universal
+Profile Grid.
 
-## 🌟 Key Features
+This is the JordyDutch version of the project. It started from the LUKSO
+hackathon work by [Heisenburgirs](https://github.com/Heisenburgirs), but the app
+now works differently: the catalog is maintained through GitHub pull requests,
+the storefront exposes machine-readable data, and Add to Grid works through the
+Universal Everything add-widget flow outside the Grid as well.
 
-### For Users
-- **Seamless Discovery**: Browse apps by category, popularity, or search
-- **One-Click Installation**: Install apps directly to your Universal Profile grid
-- **Curated Experience**: Featured apps and top charts help you find the best apps
-- **Developer Verification**: Trusted developers are highlighted
-- **Rich App Details**: Screenshots, descriptions, and size information for each app
-- **My Apps Management**: View and manage all your installed apps in one place
+## What This App Does
 
-### For Developers
-- **Easy Integration**: Simple process to list your mini-app
-- **Rich Metadata**: Support for app icons, banners, screenshots, and descriptions
-- **Category System**: Organize your app for better discovery
-- **Developer Profiles**: Build your reputation in the ecosystem
-- **Direct Distribution**: Reach users directly through their Universal Profiles
+- Lists LUKSO Mini-Apps from `src/data/apps.json`.
+- Builds app detail pages at `/store/<appId>`.
+- Supports category browsing, search, featured apps, screenshots and source-code
+  links.
+- Adds apps to a Universal Profile Grid with prebuilt
+  `universaleverything.io/add-widget` deep links.
+- Still supports direct LSP28 The Grid writes when running inside a connected
+  Universal Profile Grid context.
+- Tracks app opens with optional Upstash Redis storage and ranks Trending from
+  those counts.
+- Exposes agent-friendly app data through `/api/apps` and `/llms.txt`.
 
-## 🚀 Value Proposition
+## How The Catalog Works
 
-### For the LUKSO Ecosystem
-1. **Ecosystem Growth**: Makes it easier for users to discover and use LUKSO apps
-2. **Developer Onboarding**: Simplifies the process for developers to reach users
-3. **Quality Control**: Curated experience ensures high-quality apps
-4. **User Experience**: Streamlined discovery and installation process
+The catalog is data-driven. Adding or updating apps should usually require no
+TypeScript changes.
 
-### For Users
-1. **Centralized Discovery**: One place to find all LUKSO mini-apps
-2. **Trust & Safety**: Verified developers and curated content
-3. **Easy Management**: Install and manage apps directly from your Universal Profile
-4. **Rich Information**: Detailed app information before installation
-5. **Personalized Experience**: Apps organized by category and popularity
+- App data lives in `src/data/apps.json`.
+- App images live in `public/apps/<slug>/`.
+- `src/data/appCatalog.ts` loads the JSON, derives image paths, builds featured
+  apps, categories and extra widgets, and collapses related product-family
+  entries into one store listing.
 
-### For Developers
-1. **Distribution Channel**: Reach users directly through their Universal Profiles
-2. **Marketing Platform**: Showcase your app with rich media
-3. **User Acquisition**: Get discovered by users browsing for apps
-4. **Analytics**: Track installations and usage
-5. **Community Building**: Build a following in the LUKSO ecosystem
+To update the catalog:
 
-## 🔮 Future Improvements
+1. Fork this repository.
+2. Edit `src/data/apps.json`.
+3. Add or update images in `public/apps/<slug>/`.
+4. Run the verification commands.
+5. Open a pull request.
 
-### Technical Enhancements
-1. **Decentralized Registry**
-   - Implement a more efficient backend service for storing mini-app metadata
-   - Use IPFS for decentralized storage of app data
+See [docs/adding-apps.md](docs/adding-apps.md) for the exact JSON fields, image
+naming rules and category list.
 
-2. **Enhanced Security**
-   - Implement LSP6 KeyManager to abstract away transactions
-   - Implement reputation system for developers
+## Important Routes
 
-3. **Smart Discovery**
-   - Add context-aware app suggestions based on user behavior
-   - Create personalized app feeds
+| Route | Purpose |
+|---|---|
+| `/` | Main discovery experience |
+| `/store` | Full searchable app directory |
+| `/store/<appId>` | Shareable app detail page with structured data |
+| `/search?q=<term>&category=<Category>` | Search and category deep links |
+| `/api/apps` | Machine-readable catalog JSON with absolute URLs and Add to Grid links |
+| `/api/track-open` | Best-effort open tracking endpoint |
+| `/api/trending` | Open-count data used by Trending |
+| `/llms.txt` | LLM-friendly catalog overview |
 
-4. **Developer Tools**
-   - Add analytics dashboard for developers
-   - Implement app update management
-   - Add developer documentation and SDK
+## Add To Grid
 
-5. **User Experience**
-   - Add app ratings and reviews
-   - Add app search with filters
-   - Create app collections and playlists
+The current default Add to Grid action uses Universal Everything's add-widget
+route:
 
-### Ecosystem Integration
-
-1. **Community Features**
-   - Add user reviews and ratings
-   - Implement app discussions and comments
-
-2. **Monetization**
-   - Add support for in-app purchases
-   - Implement app subscriptions (o_O)
-
-## 🛠️ Technical Stack
-
-- **Frontend**: Next.js 14
-- **Styling**: Tailwind CSS
-- **Blockchain**: viem
-- **Universal Profile**: UP Provider
-- **Data Schemas**: ERC725.js
-- **Data Fetching**: Apollo Client
-- **IPFS**: Pinata API
-- **State Management**: React Context
-
-## 📐 Architecture
-
-```mermaid
-graph TD
-    A[User Interface] --> B[App Discovery]
-    A --> C[App Installation]
-    A --> D[App Management]
-    
-    B --> E[Local App Registry]
-    C --> F[LSP28TheGrid Metadata]
-    D --> F
-    
-    F --> G[IPFS Upload]
-    G --> H[Get IPFS Hash]
-    H --> I[Prepare LSP28TheGrid Data]
-    I --> J[Encode Data]
-    J --> K[Update Universal Profile]
-    
-    subgraph "Universal Profile"
-        K --> L[LSP28TheGrid]
-    end
-    
-    subgraph "Storage"
-        E
-        G
-    end
+```text
+https://universaleverything.io/add-widget?data=<URL-encoded widget JSON>
 ```
 
-### Flow Description
+The widget JSON shape is:
 
-1. **User Interface Layer**
-   - App discovery through categories and search
-   - Installation/uninstallation interface
-   - App management dashboard
-
-2. **Data Layer**
-   - Local app registry (demo phase)
-   - IPFS storage for metadata
-   - Universal Profile LSP28TheGrid data
-
-3. **Process Flow**
-   - User selects app to install/uninstall
-   - System prepares LSP28TheGrid metadata
-   - Metadata is uploaded to IPFS
-   - IPFS hash is retrieved
-   - Final LSP28TheGrid data is prepared and encoded
-   - Universal Profile is updated with new grid data
-
-4. **Integration Points**
-   - Universal Profile Provider for blockchain interaction
-   - IPFS (Pinata) for decentralized storage
-   - Local registry for app metadata (to be decentralized in future)
-
-## 🚀 Getting Started
-
-1. Clone the repository:
-```bash
-git clone https://github.com/Deliquified/mini-store.git
-cd mini-store
+```json
+{
+  "properties": {
+    "src": "https://example-mini-app.xyz"
+  },
+  "type": "IFRAME",
+  "width": 1,
+  "height": 1
+}
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+The app builds these links in `src/lib/addToGrid.ts`. Each serialized app in
+`/api/apps` includes a ready-to-use `addToGridUrl`.
 
-3. Create a `.env` file:
+When the store is running inside a Universal Profile Grid and the wallet context
+is connected, `useInstallApp` can write updated LSP28 The Grid metadata directly:
+it updates the local grid sections, uploads the new metadata to IPFS through
+Pinata, encodes the VerifiableURI with ERC725.js, and calls `setData` on the
+Universal Profile.
+
+## Trending And Open Tracking
+
+App opens are recorded through `useAppLaunch.openApp`, which calls
+`trackOpen(app.id)` before opening the app in a new tab.
+
+Tracking is optional:
+
+- Without Redis env vars, tracking no-ops and the store still works.
+- With Upstash Redis configured, `/api/track-open` stores counts in the
+  `app:opens` hash.
+- Client session storage deduplicates one open per app per browser session.
+- The server adds a 10-minute per-IP/app cooldown.
+- `/api/trending` returns the counts used by the Trending section.
+
+See [docs/trending.md](docs/trending.md) for setup details.
+
+## Environment Variables
+
+Create `.env` with the services you need.
+
 ```env
-PINATA_API_KEY=your_pinata_api_key
-PINATA_API_SECRET=your_pinata_api_secret
+# Required for direct in-Grid install metadata uploads through Pinata.
+PINATA_JWT=
+NEXT_PUBLIC_GATEWAY_URL=
+
+# Used for absolute URLs in metadata, sitemap, /api/apps and /llms.txt.
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# Used by Apollo Client to fetch Universal Profile publisher metadata.
+NEXT_PUBLIC_UNIVERSAL_GRAPH_URL=
+
+# Optional: Upstash Redis for open tracking and Trending.
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
+
+# Also accepted for manual Upstash setups:
+# UPSTASH_REDIS_REST_URL=
+# UPSTASH_REDIS_REST_TOKEN=
 ```
 
-4. Start the development server:
+For LUKSO mainnet profile data, `NEXT_PUBLIC_UNIVERSAL_GRAPH_URL` is normally:
+
+```text
+https://envio.lukso-mainnet.universal.tech/v1/graphql
+```
+
+## Local Development
+
 ```bash
+git clone https://github.com/JordyDutch/mini-store.git
+cd mini-store
+npm install
 npm run dev
 ```
 
-## 🤝 Contributing
+The app runs on the Next.js dev server, usually `http://localhost:3000`.
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+## Verification
 
-## 📝 License
+Before opening a pull request, run:
 
-[MIT License](LICENSE)
+```bash
+npx tsc --noEmit
+npm run build
+```
 
-Made with ❤️ by Deliquified Labs
+For code changes, also run:
+
+```bash
+npm run lint
+```
+
+## Tech Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- LUKSO UP Provider
+- viem
+- ERC725.js
+- Apollo Client
+- Pinata
+- Upstash Redis
+
+## Project Status
+
+This repository is focused on the live JordyDutch UP!Store flow:
+
+- community catalog updates through pull requests;
+- app discovery and Add to Grid links for users;
+- machine-readable catalog data for agents and integrations;
+- optional analytics-backed Trending without making tracking a hard dependency.

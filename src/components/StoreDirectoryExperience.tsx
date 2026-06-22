@@ -1,18 +1,16 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Compass, Store } from "lucide-react";
+import { Compass, Search } from "lucide-react";
 
-import { useProfile } from "@/app/components/providers/profileProvider";
-import { useUpProvider } from "@/app/components/providers/upProvider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppDetailPage from "@/components/AppDetailPage";
+import NavSwitch from "@/components/NavSwitch";
 import SearchPage from "@/components/SearchPage";
 import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import UpConnect from "@/components/UpConnect";
 import { Wordmark } from "@/components/Wordmark";
 import { apps, type App } from "@/data/appCatalog";
 
@@ -63,9 +61,6 @@ export default function StoreDirectoryExperience({ initialAppId }: StoreDirector
 }
 
 function StoreNavbar() {
-  const { walletConnected } = useUpProvider();
-  const { profileData } = useProfile();
-
   return (
     <header className="glass-nav sticky top-0 z-40 pt-safe">
       <div className="mx-auto flex h-[52px] w-full max-w-[1200px] items-center justify-between px-4 md:h-16 md:px-6">
@@ -86,8 +81,8 @@ function StoreNavbar() {
               aria-current="page"
               className="relative flex h-9 min-h-[44px] items-center gap-1.5 px-3 text-sm font-medium text-brand-text"
             >
-              <Store className="h-4 w-4" aria-hidden="true" />
-              Store
+              <Search className="h-4 w-4" aria-hidden="true" />
+              Search
               <span
                 aria-hidden="true"
                 className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand"
@@ -97,57 +92,12 @@ function StoreNavbar() {
 
           <ThemeToggle />
 
-          {walletConnected && profileData ? (
-            <span className="glass inline-flex h-10 min-h-[44px] items-center gap-2 rounded-full px-2 pr-3">
-              <Avatar className="h-7 w-7">
-                <AvatarImage
-                  src={profileData?.profileImages?.[0]?.url || ""}
-                  alt={profileData?.name || "Universal Profile"}
-                />
-                <AvatarFallback className="bg-transparent p-0">
-                  <Image
-                    src="/up-logo.png"
-                    alt="UP!"
-                    width={28}
-                    height={28}
-                    className="h-full w-full object-cover"
-                  />
-                </AvatarFallback>
-              </Avatar>
-              <span className="hidden max-w-[120px] truncate text-sm font-medium text-foreground sm:inline">
-                {profileData?.name || "Profile"}
-              </span>
-            </span>
-          ) : (
-            <a
-              href="https://universaleverything.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-foreground sm:inline-flex sm:min-h-[44px] sm:items-center"
-            >
-              Open in Universal Profile
-            </a>
-          )}
+          <UpConnect />
         </div>
       </div>
 
       <div className="border-t border-border px-4 py-2 md:hidden">
-        <div className="seg-track w-full">
-          <Link
-            href="/"
-            className="seg-inactive flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
-          >
-            <Compass className="h-4 w-4" aria-hidden="true" />
-            Explore
-          </Link>
-          <span
-            aria-current="page"
-            className="seg-active flex min-h-[44px] flex-1 items-center justify-center gap-1.5"
-          >
-            <Store className="h-4 w-4" aria-hidden="true" />
-            Store
-          </span>
-        </div>
+        <NavSwitch active="search" />
       </div>
     </header>
   );
